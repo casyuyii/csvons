@@ -1,17 +1,31 @@
 package csvons
 
 import (
+	"log/slog"
 	"testing"
 )
 
 func TestRead(t *testing.T) {
-	m := read_config_file("./testdata/ruler.json")
+	configFileName := "./testdata/ruler.json"
+	m := readConfigFile(configFileName)
+	if m == nil {
+		slog.Error("read config file error", "file_name", configFileName)
+		return
+	}
 
-	metadata := get_metadata(m)
-	t.Log("metadata", metadata)
+	metadata := getMetadata(m)
+	if metadata == nil {
+		slog.Error("get metadata error", "file_name", configFileName)
+		return
+	}
 
-	exists := get_exists_ruler(m)
-	t.Log("exists", exists)
+	exists := getExistsRuler(m)
+	if exists == nil {
+		slog.Error("get exists ruler error", "file_name", configFileName)
+		return
+	}
 
-	exists_test(exists, metadata)
+	slog.Info("", "metadata", metadata, "exists", exists)
+
+	existsTest(exists, metadata)
 }

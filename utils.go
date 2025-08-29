@@ -7,15 +7,15 @@ import (
 	"os"
 )
 
-func read_csv_file(csv_file_name string) [][]string {
-	csv_file, err := os.Open(csv_file_name)
+func readCsvFile(csvFileName string) [][]string {
+	csvFile, err := os.Open(csvFileName)
 	if err != nil {
 		slog.Error("error opening file", "error", err)
 		return nil
 	}
 
-	csv_reader := csv.NewReader(csv_file)
-	records, err := csv_reader.ReadAll()
+	csvReader := csv.NewReader(csvFile)
+	records, err := csvReader.ReadAll()
 	if err != nil {
 		slog.Error("error reading file", "error", err)
 		return nil
@@ -24,8 +24,8 @@ func read_csv_file(csv_file_name string) [][]string {
 	return records
 }
 
-func read_config_file(config_file_name string) map[string]json.RawMessage {
-	data, err := os.ReadFile(config_file_name)
+func readConfigFile(configFileName string) map[string]json.RawMessage {
+	data, err := os.ReadFile(configFileName)
 	if err != nil {
 		slog.Error("error opening file", "error", err)
 		return nil
@@ -41,7 +41,7 @@ func read_config_file(config_file_name string) map[string]json.RawMessage {
 	return m
 }
 
-func get_exists_ruler(m map[string]json.RawMessage) []Exists {
+func getExistsRuler(m map[string]json.RawMessage) []Exists {
 	if m == nil {
 		return nil
 	}
@@ -62,7 +62,7 @@ func get_exists_ruler(m map[string]json.RawMessage) []Exists {
 	return nil
 }
 
-func get_metadata(m map[string]json.RawMessage) *Metadata {
+func getMetadata(m map[string]json.RawMessage) *Metadata {
 	if m == nil {
 		return nil
 	}
@@ -82,13 +82,13 @@ func get_metadata(m map[string]json.RawMessage) *Metadata {
 	return nil
 }
 
-func get_field_pos(type_field []string, field_name string) int {
-	if type_field == nil {
+func getFieldPos(typeField []string, fieldName string) int {
+	if typeField == nil {
 		return -1
 	}
 
-	for i, record := range type_field {
-		if record == field_name {
+	for i, record := range typeField {
+		if record == fieldName {
 			return i
 		}
 	}

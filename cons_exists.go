@@ -5,54 +5,54 @@ import (
 	"log/slog"
 )
 
-func exists_test(ruler []Exists, metadata *Metadata) {
+func existsTest(ruler []Exists, metadata *Metadata) {
 	if len(ruler) == 0 || metadata == nil {
-		slog.Error("ruler or metadata is nil")
+		slog.Error("ruler or metadata is nil", "ruler", ruler, "metadata", metadata)
 		return
 	}
 
-	field_name_index := metadata.FieldNameIndex
+	fieldNameIndex := metadata.FieldNameIndex
 
 	for _, exist := range ruler {
-		src_records := read_csv_file(exist.Src.FileName)
-		dst_records := read_csv_file(exist.Dst.FileName)
+		srcRecords := readCsvFile(exist.Src.FileName)
+		dstRecords := readCsvFile(exist.Dst.FileName)
 
-		if field_name_index < 0 {
+		if fieldNameIndex < 0 {
 			slog.Error("field_name_index is less than 0")
 			return
 		}
 
-		if len(src_records) <= field_name_index {
-			slog.Error("src_records is less than field_name_index", "field_name_index", field_name_index, "src_records length", len(src_records))
+		if len(srcRecords) <= fieldNameIndex {
+			slog.Error("src_records is less than field_name_index", "field_name_index", fieldNameIndex, "src_records length", len(srcRecords))
 			return
 		}
 
-		if len(dst_records) <= field_name_index {
-			slog.Error("dst_records is less than field_name_index", "field_name_index", field_name_index, "dst_records length", len(dst_records))
+		if len(dstRecords) <= fieldNameIndex {
+			slog.Error("dst_records is less than field_name_index", "field_name_index", fieldNameIndex, "dst_records length", len(dstRecords))
 			return
 		}
 
-		src_field_pos := get_field_pos(src_records[field_name_index], exist.Src.FieldName)
-		dst_field_pos := get_field_pos(dst_records[field_name_index], exist.Dst.FieldName)
-		if src_field_pos < 0 || dst_field_pos < 0 {
-			slog.Error("src_field_pos or dst_field_pos is less than 0", "src_field_pos", src_field_pos, "dst_field_pos", dst_field_pos)
+		srcFieldPos := getFieldPos(srcRecords[fieldNameIndex], exist.Src.FieldName)
+		dstFieldPos := getFieldPos(dstRecords[fieldNameIndex], exist.Dst.FieldName)
+		if srcFieldPos < 0 || dstFieldPos < 0 {
+			slog.Error("src_field_pos or dst_field_pos is less than 0", "src_field_pos", srcFieldPos, "dst_field_pos", dstFieldPos)
 			return
 		}
 
-		for i := field_name_index + 1; i < len(src_records); i++ {
-			if i >= len(dst_records) {
+		for i := fieldNameIndex + 1; i < len(srcRecords); i++ {
+			if i >= len(dstRecords) {
 				slog.Error(fmt.Sprintf("field %s is not found in dst_records(dst_records length not enough)", exist.Src.FieldName))
 				return
 			}
 
-			src_field := src_records[i][src_field_pos]
-			dst_field := dst_records[i][dst_field_pos]
+			srcField := srcRecords[i][srcFieldPos]
+			dstField := dstRecords[i][dstFieldPos]
 
-			slog.Info("src_field", "src_field", src_field)
-			slog.Info("dst_field", "dst_field", dst_field)
+			slog.Info("src_field", "src_field", srcField)
+			slog.Info("dst_field", "dst_field", dstField)
 
-			if src_field != dst_field {
-				slog.Error("src_field and dst_field are not equal", "src_field", src_field, "dst_field", dst_field)
+			if srcField != dstField {
+				slog.Error("src_field and dst_field are not equal", "src_field", srcField, "dst_field", dstField)
 				return
 			}
 		}
