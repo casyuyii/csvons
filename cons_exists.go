@@ -1,59 +1,74 @@
 package csvons
 
 import (
-	"fmt"
-	"log/slog"
+	"log"
+	"slices"
 )
 
-func existsTest(ruler []Exists, metadata *Metadata) {
+func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 	if len(ruler) == 0 || metadata == nil {
-		slog.Error("ruler or metadata is nil", "ruler", ruler, "metadata", metadata)
+		log.Fatal("ruler or metadata is nil", "ruler", ruler, "metadata", metadata)
 		return
 	}
+	log.Printf("checking src file %s ...", stem)
 
 	fieldNameIndex := metadata.FieldNameIndex
+	if fieldNameIndex < 0 {
+		log.Fatal("field_name_index is less than 0")
+		return
+	}
+	log.Printf("field_name_index: %d", fieldNameIndex)
+
+	srcRecords := readCsvFile(stem, metadata)
+	srcLen := len(srcRecords)
+	log.Printf("src_records length: %d", srcLen)
+	if srcLen <= fieldNameIndex {
+		log.Fatal("src_records <= field_name_index", "field_name_index", fieldNameIndex, "src_records length", srcLen)
+		return
+	}
+	srcFileds := srcRecords[fieldNameIndex]
+	log.Printf("src_fields: %s", srcFileds)
 
 	for _, exist := range ruler {
-		srcRecords := readCsvFile(exist.Src.FileName)
-		dstRecords := readCsvFile(exist.Dst.FileName)
-
-		if fieldNameIndex < 0 {
-			slog.Error("field_name_index is less than 0")
+		dstRecords := readCsvFile(exist.DstFileStem, metadata)
+		if dstLen := len(dstRecords); dstLen <= fieldNameIndex || dstLen < srcLen {
+			log.Fatal("dst_records length not enough", "dst_records length", dstLen)
 			return
 		}
+		log.Printf("checking dst file %s ...", exist.DstFileStem)
 
-		if len(srcRecords) <= fieldNameIndex {
-			slog.Error("src_records is less than field_name_index", "field_name_index", fieldNameIndex, "src_records length", len(srcRecords))
-			return
-		}
+		dstFileds := dstRecords[fieldNameIndex]
+		log.Printf("dst_fields: %s", dstFileds)
 
-		if len(dstRecords) <= fieldNameIndex {
-			slog.Error("dst_records is less than field_name_index", "field_name_index", fieldNameIndex, "dst_records length", len(dstRecords))
-			return
-		}
-
-		srcFieldPos := getFieldPos(srcRecords[fieldNameIndex], exist.Src.FieldName)
-		dstFieldPos := getFieldPos(dstRecords[fieldNameIndex], exist.Dst.FieldName)
-		if srcFieldPos < 0 || dstFieldPos < 0 {
-			slog.Error("src_field_pos or dst_field_pos is less than 0", "src_field_pos", srcFieldPos, "dst_field_pos", dstFieldPos)
-			return
-		}
-
-		for i := fieldNameIndex + 1; i < len(srcRecords); i++ {
-			if i >= len(dstRecords) {
-				slog.Error(fmt.Sprintf("field %s is not found in dst_records(dst_records length not enough)", exist.Src.FieldName))
+		for _, field := range exist.Fields {
+			srcFieldPos := getFieldPos(srcFileds, field.Src)
+			if srcFieldPos < 0 {
+				log.Fatalf("src_field not found: %s", field.Src)
 				return
 			}
 
-			srcField := srcRecords[i][srcFieldPos]
-			dstField := dstRecords[i][dstFieldPos]
-
-			slog.Info("src_field", "src_field", srcField)
-			slog.Info("dst_field", "dst_field", dstField)
-
-			if srcField != dstField {
-				slog.Error("src_field and dst_field are not equal", "src_field", srcField, "dst_field", dstField)
+			dstFieldPos := getFieldPos(dstFileds, field.Dst)
+			if dstFieldPos < 0 {
+				log.Fatalf("dst_field not found: %s", field.Dst)
 				return
+			}
+
+			for i := fieldNameIndex + 1; i < len(srcRecords); i++ {
+				srcField := srcRecords[i][srcFieldPos]
+
+				found := -1
+				for j := fieldNameIndex + 1; j < len(dstRecords); j++ {
+					if slices.Contains(dstRecords[j], srcField) {
+						found = j
+						break
+					}
+				}
+
+				if found < 0 {
+					log.Fatalf("can't find src_field [%s] value [%s] in dst_records", field.Src, srcField)
+					return
+				}
+				log.Printf("found src_field [%s] value [%s] in dst_records at pos [%d]", field.Src, srcField, found)
 			}
 		}
 	}

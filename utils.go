@@ -3,63 +3,53 @@ package csvons
 import (
 	"encoding/csv"
 	"encoding/json"
-	"log/slog"
+	"log"
 	"os"
+	"path/filepath"
 )
-
-func readCsvFile(csvFileName string) [][]string {
-	csvFile, err := os.Open(csvFileName)
-	if err != nil {
-		slog.Error("error opening file", "error", err)
-		return nil
-	}
-
-	csvReader := csv.NewReader(csvFile)
-	records, err := csvReader.ReadAll()
-	if err != nil {
-		slog.Error("error reading file", "error", err)
-		return nil
-	}
-
-	return records
-}
 
 func readConfigFile(configFileName string) map[string]json.RawMessage {
 	data, err := os.ReadFile(configFileName)
 	if err != nil {
-		slog.Error("error opening file", "error", err)
+		log.Fatal("error opening file", "error", err)
 		return nil
 	}
 
 	var m map[string]json.RawMessage
 	err = json.Unmarshal(data, &m)
 	if err != nil {
-		slog.Error("error unmarshalling file", "error", err)
+		log.Fatal("error unmarshalling file", "error", err)
 		return nil
 	}
 
 	return m
 }
 
-func getExistsRuler(m map[string]json.RawMessage) []Exists {
-	if m == nil {
+// read csv file
+// @note file not cached, each file should only be read once
+// @param stem the stem of the csv file
+// @example readCsvFile("username", &Metadata{CSVFileFolder: "testdata", Extension: ".csv"})
+func readCsvFile(stem string, metadata *Metadata) [][]string {
+	if metadata == nil {
+		log.Fatal("metadata is nil")
 		return nil
 	}
 
-	for k, v := range m {
-		if k == "exists" {
-			var exists []Exists
-			err := json.Unmarshal(v, &exists)
-			if err != nil {
-				slog.Error("error unmarshalling exists", "error", err)
-				return nil
-			}
-			return exists
-		}
+	fullPath := filepath.Join(metadata.CSVFileFolder, stem+metadata.Extension)
+	csvFile, err := os.Open(fullPath)
+	if err != nil {
+		log.Fatal("error opening file", "full_path", fullPath, "error", err)
+		return nil
 	}
 
-	slog.Error("exists ruler not found")
-	return nil
+	csvReader := csv.NewReader(csvFile)
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		log.Fatal("error reading file", "error", err)
+		return nil
+	}
+
+	return records
 }
 
 func getMetadata(m map[string]json.RawMessage) *Metadata {
@@ -72,7 +62,7 @@ func getMetadata(m map[string]json.RawMessage) *Metadata {
 			var metadata Metadata
 			err := json.Unmarshal(v, &metadata)
 			if err != nil {
-				slog.Error("error unmarshalling metadata", "error", err)
+				log.Fatal("error unmarshalling metadata", "error", err)
 				return nil
 			}
 			return &metadata

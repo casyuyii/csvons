@@ -1,0 +1,29 @@
+{
+  "username": {
+    "exists": [
+      {
+        "dst_file_stem": "username-d1",
+        "fields": [
+          {
+            "src": "Username",
+            "dst": "Username"
+          }
+        ]
+      },
+      {
+        "dst_file_stem": "username-d2",
+        "fields": [
+          {
+            "src": "Username",
+            "dst": "Username"
+          }
+        ]
+      }
+    ]
+  },
+  "metadata": {
+    "csv_file_folder": "testdata",
+    "field_name_index": 0,
+    "extension": ".csv"
+  }
+}

@@ -6,16 +6,15 @@ type ConstrainsConfig struct {
 }
 
 type Metadata struct {
-	FieldNameIndex int `json:"field_name_index"`
+	CSVFileFolder  string `json:"csv_file_folder"`
+	FieldNameIndex int    `json:"field_name_index"`
+	Extension      string `json:"extension"`
 }
 
 type Exists struct {
-	Src struct {
-		FileName  string `json:"file_name"`
-		FieldName string `json:"field_name"`
-	} `json:"src"`
-	Dst struct {
-		FileName  string `json:"file_name"`
-		FieldName string `json:"field_name"`
-	} `json:"dst"`
+	DstFileStem string `json:"dst_file_stem"`
+	Fields      []struct {
+		Src string `json:"src"`
+		Dst string `json:"dst"`
+	} `json:"fields"`
 }
