@@ -57,27 +57,28 @@ func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 				return
 			}
 
-			searchedField := make(map[string]bool)
+			searchedField := make(map[string]int)
 			for i := dataIndex; i < len(srcRecords); i++ {
 				srcField := srcRecords[i][srcFieldPos]
 				if _, ok := searchedField[srcField]; ok {
+					log.Printf("src_field [%s] value [%s] already searched at row [%d]", field.Src, srcField, searchedField[srcField])
 					continue
 				}
-				searchedField[srcField] = true
 
-				found := -1
 				for j := dataIndex; j < len(dstRecords); j++ {
-					if dstRecords[j][dstFieldPos] == srcField {
-						found = j
+					dstField := dstRecords[j][dstFieldPos]
+					searchedField[dstField] = j
+					if dstField == srcField {
 						break
 					}
 				}
 
-				if found < 0 {
+				rowIndex, ok := searchedField[srcField]
+				if !ok {
 					log.Fatalf("can't find src_field [%s] value [%s] in dst_records", field.Src, srcField)
 					return
 				}
-				log.Printf("found src_field [%s] value [%s] in dst_records at pos [%d]", field.Src, srcField, found)
+				log.Printf("found src_field [%s] value [%s] in dst_records at row [%d]", field.Src, srcField, rowIndex)
 			}
 		}
 	}
