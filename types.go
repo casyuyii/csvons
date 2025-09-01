@@ -8,6 +8,7 @@ type ConstrainsConfig struct {
 type Metadata struct {
 	CSVFileFolder  string `json:"csv_file_folder"`
 	FieldNameIndex int    `json:"field_name_index"`
+	DataIndex      int    `json:"data_index"`
 	Extension      string `json:"extension"`
 }
 

@@ -2,28 +2,32 @@ package csvons
 
 import (
 	"log"
-	"slices"
 )
 
 func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 	if len(ruler) == 0 || metadata == nil {
-		log.Fatal("ruler or metadata is nil", "ruler", ruler, "metadata", metadata)
+		log.Fatalf("ruler [%v] or metadata [%v] is nil", ruler, metadata)
 		return
 	}
 	log.Printf("checking src file %s ...", stem)
 
 	fieldNameIndex := metadata.FieldNameIndex
 	if fieldNameIndex < 0 {
-		log.Fatal("field_name_index is less than 0")
+		log.Fatalf("field_name_index [%d] is less than 0", fieldNameIndex)
 		return
 	}
 	log.Printf("field_name_index: %d", fieldNameIndex)
 
+	dataIndex := metadata.DataIndex
+	if dataIndex <= fieldNameIndex {
+		log.Fatalf("data_index [%d] is less than or equal to field_name_index [%d]", dataIndex, fieldNameIndex)
+		return
+	}
+	log.Printf("data_index: %d", dataIndex)
+
 	srcRecords := readCsvFile(stem, metadata)
-	srcLen := len(srcRecords)
-	log.Printf("src_records length: %d", srcLen)
-	if srcLen <= fieldNameIndex {
-		log.Fatal("src_records <= field_name_index", "field_name_index", fieldNameIndex, "src_records length", srcLen)
+	if srcLen := len(srcRecords); srcLen <= dataIndex {
+		log.Fatalf("src_records length [%d] <= data_index [%d]", srcLen, dataIndex)
 		return
 	}
 	srcFileds := srcRecords[fieldNameIndex]
@@ -31,8 +35,8 @@ func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 
 	for _, exist := range ruler {
 		dstRecords := readCsvFile(exist.DstFileStem, metadata)
-		if dstLen := len(dstRecords); dstLen <= fieldNameIndex || dstLen < srcLen {
-			log.Fatal("dst_records length not enough", "dst_records length", dstLen)
+		if dstLen := len(dstRecords); dstLen <= dataIndex {
+			log.Fatalf("dst_records length not enough %d", dstLen)
 			return
 		}
 		log.Printf("checking dst file %s ...", exist.DstFileStem)
@@ -53,12 +57,17 @@ func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 				return
 			}
 
-			for i := fieldNameIndex + 1; i < len(srcRecords); i++ {
+			searchedField := make(map[string]bool)
+			for i := dataIndex; i < len(srcRecords); i++ {
 				srcField := srcRecords[i][srcFieldPos]
+				if _, ok := searchedField[srcField]; ok {
+					continue
+				}
+				searchedField[srcField] = true
 
 				found := -1
-				for j := fieldNameIndex + 1; j < len(dstRecords); j++ {
-					if slices.Contains(dstRecords[j], srcField) {
+				for j := dataIndex; j < len(dstRecords); j++ {
+					if dstRecords[j][dstFieldPos] == srcField {
 						found = j
 						break
 					}

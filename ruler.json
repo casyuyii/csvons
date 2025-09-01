@@ -24,6 +24,7 @@
   "metadata": {
     "csv_file_folder": "testdata",
     "field_name_index": 0,
+    "data_index": 1,
     "extension": ".csv"
   }
 }
