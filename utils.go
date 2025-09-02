@@ -8,21 +8,46 @@ import (
 	"path/filepath"
 )
 
-func readConfigFile(configFileName string) map[string]json.RawMessage {
+var (
+	METADATA_KEY = "csvons_metadata"
+)
+
+// read config file
+// @param configFileName the name of the config file
+// @return a map of the config file and the metadata
+// @example readConfigFile("ruler.json")
+func readConfigFile(configFileName string) (map[string]json.RawMessage, *Metadata) {
 	data, err := os.ReadFile(configFileName)
 	if err != nil {
-		log.Fatal("error opening file", "error", err)
-		return nil
+		log.Printf("error opening file %s: %v", configFileName, err)
+		return nil, nil
 	}
 
-	var m map[string]json.RawMessage
-	err = json.Unmarshal(data, &m)
+	var cfg map[string]json.RawMessage
+	err = json.Unmarshal(data, &cfg)
 	if err != nil {
-		log.Fatal("error unmarshalling file", "error", err)
-		return nil
+		log.Printf("error unmarshalling file %s: %v", configFileName, err)
+		return nil, nil
 	}
 
-	return m
+	var metadata *Metadata
+	if v, ok := cfg[METADATA_KEY]; ok {
+		var m Metadata
+		err := json.Unmarshal(v, &m)
+		if err != nil {
+			log.Printf("error unmarshalling metadata: %v", err)
+			return nil, nil
+		}
+		metadata = &m
+	}
+
+	if metadata == nil {
+		log.Printf("metadata is nil")
+		return nil, nil
+	}
+
+	delete(cfg, METADATA_KEY)
+	return cfg, metadata
 }
 
 // read csv file
@@ -31,57 +56,23 @@ func readConfigFile(configFileName string) map[string]json.RawMessage {
 // @example readCsvFile("username", &Metadata{CSVFileFolder: "testdata", Extension: ".csv"})
 func readCsvFile(stem string, metadata *Metadata) [][]string {
 	if metadata == nil {
-		log.Fatal("metadata is nil")
+		log.Println("metadata is nil")
 		return nil
 	}
 
 	fullPath := filepath.Join(metadata.CSVFileFolder, stem+metadata.Extension)
 	csvFile, err := os.Open(fullPath)
 	if err != nil {
-		log.Fatal("error opening file", "full_path", fullPath, "error", err)
+		log.Printf("error opening file %s: %v", fullPath, err)
 		return nil
 	}
 
 	csvReader := csv.NewReader(csvFile)
 	records, err := csvReader.ReadAll()
 	if err != nil {
-		log.Fatal("error reading file", "error", err)
+		log.Printf("error reading file %s: %v", fullPath, err)
 		return nil
 	}
 
 	return records
-}
-
-func getMetadata(m map[string]json.RawMessage) *Metadata {
-	if m == nil {
-		return nil
-	}
-
-	for k, v := range m {
-		if k == "metadata" {
-			var metadata Metadata
-			err := json.Unmarshal(v, &metadata)
-			if err != nil {
-				log.Fatal("error unmarshalling metadata", "error", err)
-				return nil
-			}
-			return &metadata
-		}
-	}
-
-	return nil
-}
-
-func getFieldPos(typeField []string, fieldName string) int {
-	if typeField == nil {
-		return -1
-	}
-
-	for i, record := range typeField {
-		if record == fieldName {
-			return i
-		}
-	}
-
-	return -1
 }

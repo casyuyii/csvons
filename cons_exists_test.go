@@ -8,19 +8,13 @@ import (
 
 func TestExists(t *testing.T) {
 	configFileName := "./ruler.json"
-	m := readConfigFile(configFileName)
-	if m == nil {
+	rules, metadata := readConfigFile(configFileName)
+	if rules == nil || metadata == nil {
 		log.Fatal("read config file error", "file_name", configFileName)
 		return
 	}
 
-	metadata := getMetadata(m)
-	if metadata == nil {
-		log.Fatal("get metadata error", "file_name", configFileName)
-		return
-	}
-
-	for stem, v := range m {
+	for stem, v := range rules {
 		rulers := map[string]json.RawMessage{}
 		err := json.Unmarshal(v, &rulers)
 		if err != nil {

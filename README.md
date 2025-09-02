@@ -10,14 +10,14 @@ Use a JSON file (ruler.json) to configure constraints between CSV files
 
 ## How to write ruler.json
 
-Apart from metadata, each key in the ruler.json file represents the stem (base name) of a CSV file, and its value defines the rules (constraints) for that file.
+Apart from csvons_metadata, each key in the ruler.json file represents the stem (base name) of a CSV file, and its value defines the rules (constraints) for that file.
 
 ## Structure of metadata
 
 - **csv_file_folder** : The folder that contains the CSV files.
 - **name_index**: The row index where the column names are defined in the CSV file.
 - **data_index**: The row index where the actual data starts in the CSV file.
-- **format**: The file format (should be ".csv").
+- **extension**: The file extension (should be ".csv").
 
 ## Structure of `ruler`
 
