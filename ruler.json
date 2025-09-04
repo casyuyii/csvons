@@ -19,7 +19,10 @@
           }
         ]
       }
-    ]
+    ],
+    "unique": {
+      "fields": ["Username"]
+    }
   },
   "csvons_metadata": {
     "csv_file_folder": "testdata",

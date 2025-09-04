@@ -5,7 +5,7 @@ Use a JSON file (ruler.json) to configure constraints between CSV files
 ## Features
 
 - [x] Validate that values in a colum exists in a specified column of another file.
-- [ ] Ensure that values in a column are unique.
+- [x] Ensure that values in a column are unique.
 - [ ] Check type and range of cloumn values.
 
 ## How to write ruler.json
@@ -26,6 +26,7 @@ Apart from csvons_metadata, each key in the ruler.json file represents the stem 
   - **fields**: A pair of column names to be compared.
     - **src**: The column name in the source file.
     - **dst**: The column name in the target file.
+- **unique**: All values in the same cloumn are unique.
 
 ## Cautions
 

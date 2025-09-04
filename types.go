@@ -5,6 +5,7 @@ package csvons
 // @param Metadata the metadata for the CSV files
 type ConstrainsConfig struct {
 	Exists   []Exists `json:"exists"`
+	Unique   Unique   `json:"unique"`
 	Metadata Metadata `json:"csvons_metadata"`
 }
 
@@ -31,4 +32,11 @@ type Exists struct {
 		Src string `json:"src"`
 		Dst string `json:"dst"`
 	} `json:"fields"`
+}
+
+// Unique is the constraints for the unique
+// @param Fields the fields to be compared
+// @example Unique{Fields: []string{"Username"}}
+type Unique struct {
+	Fields []string `json:"fields"`
 }
