@@ -9,20 +9,7 @@ import (
 // @param stem the stem (base name) of the CSV file
 // @param ruler the rules to be tested
 // @param metadata the metadata of the CSV file
-// @example ExistsTest("username",
-//
-//	[
-//	 {
-//	  "dst_file_stem": "username-d1",
-//	  "fields": [
-//	   {
-//	    "src": "Username",
-//	    "dst": "Username"
-//	   }
-//	  ]
-//	 }
-//	],
-//	&Metadata{NameIndex: 0, DataIndex: 1, Extension: ".csv"})
+// @example ExistsTest("username", []Exists{&Exists{DstFileStem: "username-d1", Fields: []struct {Src string; Dst string}{Src: "Username", Dst: "Username"}}}, &Metadata{NameIndex: 0, DataIndex: 1, Extension: ".csv"})
 func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 	if len(ruler) == 0 || metadata == nil {
 		log.Fatalf("ruler [%v] or metadata [%v] is nil", ruler, metadata)

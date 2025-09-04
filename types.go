@@ -6,6 +6,7 @@ package csvons
 type ConstrainsConfig struct {
 	Exists   []Exists `json:"exists"`
 	Unique   Unique   `json:"unique"`
+	VType    []VType  `json:"vtype"`
 	Metadata Metadata `json:"csvons_metadata"`
 }
 
@@ -39,4 +40,18 @@ type Exists struct {
 // @example Unique{Fields: []string{"Username"}}
 type Unique struct {
 	Fields []string `json:"fields"`
+}
+
+// VType is the constraints for the type
+// @param Field the field to be compared
+// @param Type the type of the field
+// @param Range the range of the field
+// @example VType{Field: "Username", Type: "string", Range: {Min: 1, Max: 100}}
+type VType struct {
+	Field string `json:"field"`
+	Type  string `json:"type"`
+	Range *struct {
+		Min float64 `json:"min"`
+		Max float64 `json:"max"`
+	} `json:"range,omitempty"`
 }
