@@ -52,6 +52,7 @@ func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 			return
 		}
 
+		typedSearchedFieldCache := make(map[string]map[string]bool)
 		for i := dataIndex; i < len(srcRecords); i++ {
 			srcFieldVals := factory(srcRecords[i][srcFieldPos])
 			if len(srcFieldVals) == 0 {
@@ -62,8 +63,17 @@ func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 			for _, srcField := range srcFieldVals {
 				log.Printf("checking src_field [%s] value [%s] of type [%s]", vtype.Field, srcField, vtype.Type)
 
+				if _, ok := typedSearchedFieldCache[vtype.Type]; !ok {
+					typedSearchedFieldCache[vtype.Type] = make(map[string]bool)
+				}
+
 				switch vtype.Type {
 				case "int":
+					if _, ok := typedSearchedFieldCache[vtype.Type][srcField]; ok {
+						log.Printf("src_field [%s] value [%s] already checked", vtype.Field, srcField)
+						continue
+					}
+
 					v, ok := strconv.ParseInt(srcField, 10, 64)
 					if ok != nil {
 						log.Fatalf("src_field [%s] value [%s] is not an int", vtype.Field, srcField)
@@ -76,6 +86,11 @@ func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 						}
 					}
 				case "float64":
+					if _, ok := typedSearchedFieldCache[vtype.Type][srcField]; ok {
+						log.Printf("src_field [%s] value [%s] already checked", vtype.Field, srcField)
+						continue
+					}
+
 					v, ok := strconv.ParseFloat(srcField, 64)
 					if ok != nil {
 						log.Fatalf("src_field [%s] value [%s] is not a float64", vtype.Field, srcField)
@@ -88,6 +103,11 @@ func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 						}
 					}
 				case "bool":
+					if _, ok := typedSearchedFieldCache[vtype.Type][srcField]; ok {
+						log.Printf("src_field [%s] value [%s] already checked", vtype.Field, srcField)
+						continue
+					}
+
 					if _, ok := strconv.ParseBool(srcField); ok != nil {
 						log.Fatalf("src_field [%s] value [%s] is not a bool", vtype.Field, srcField)
 						return
@@ -96,6 +116,7 @@ func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 					log.Fatalf("src_field [%s] value [%s] is not a valid type", vtype.Field, srcField)
 					return
 				}
+				typedSearchedFieldCache[vtype.Type][srcField] = true
 			}
 		}
 	}
