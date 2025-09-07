@@ -21,6 +21,8 @@ type Metadata struct {
 	NameIndex     int    `json:"name_index"`
 	DataIndex     int    `json:"data_index"`
 	Extension     string `json:"extension"`
+	Lev1Separator string `json:"lev1_separator"`
+	Lev2Separator string `json:"lev2_separator"`
 }
 
 // Exists is the constraints for the exists

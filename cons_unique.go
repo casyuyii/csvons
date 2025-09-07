@@ -9,7 +9,6 @@ import (
 // @param stem the stem (base name) of the CSV file
 // @param ruler the rules to be tested
 // @param metadata the metadata of the CSV file
-// @example UniqueTest("username", &Unique{Fields: []string{"Username"}}, &Metadata{NameIndex: 0, DataIndex: 1, Extension: ".csv"})
 func UniqueTest(stem string, ruler *Unique, metadata *Metadata) {
 	if ruler == nil || metadata == nil {
 		log.Fatalf("ruler [%v] or metadata [%v] is nil", ruler, metadata)

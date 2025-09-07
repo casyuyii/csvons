@@ -7,6 +7,10 @@
           {
             "src": "Username",
             "dst": "Username"
+          },
+          {
+            "src": "marks{0}",
+            "dst": " Identifier"
           }
         ]
       },
@@ -16,6 +20,15 @@
           {
             "src": "Username",
             "dst": "Username"
+          }
+        ]
+      },
+      {
+        "dst_file_stem": "tags",
+        "fields": [
+          {
+            "src": "Tags[]",
+            "dst": "Tags"
           }
         ]
       }
@@ -39,6 +52,14 @@
           "min": 1,
           "max": 100
         }
+      },
+      {
+        "field": "marks{1}",
+        "type": "int",
+        "range": {
+          "min": 1,
+          "max": 100
+        }
       }
     ]
   },
@@ -46,6 +67,8 @@
     "csv_file_folder": "testdata",
     "name_index": 0,
     "data_index": 1,
-    "extension": ".csv"
+    "extension": ".csv",
+    "lev1_separator": ";",
+    "lev2_separator": ":"
   }
 }

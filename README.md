@@ -7,10 +7,13 @@ Use a JSON file (ruler.json) to configure constraints between CSV files
 - [x] Validate that values in a colum exists in a specified column of another file.
 - [x] Ensure that values in a column are unique.
 - [x] Check type and range of cloumn values.
+- [x] Enable value checking within nested arrays.
 
 ## How to write ruler.json
 
 Apart from csvons_metadata, each key in the ruler.json file represents the stem (base name) of a CSV file, and its value defines the rules (constraints) for that file.
+
+Field can be a field-expression. For example: marks[]. Suppose the original value of marks is "100;1002;100". It will check the values "100", "1002", and "100". The suffix {n} can be used to specify a two-level nested value, where n is the index (starting at 0) of the sub-array. For example, if the value is "100:102:31;12:12;2323:212" and n is 1, the values checked are "102", "12", and "212".
 
 ## Structure of metadata
 
@@ -24,16 +27,16 @@ Apart from csvons_metadata, each key in the ruler.json file represents the stem 
 - **exists**: An array of rules that specify that the values in a column of this CSV file must also exist in a specified column of another file.
   - **dst_file_stem**: The stem (base name) of the target CSV file.
   - **fields**: A pair of column names to be compared.
-    - **src**: The column name in the source file.
+    - **src**: The column name in the source file(support field-expression).
     - **dst**: The column name in the target file.
 - **unique**: All values in the same cloumn are unique.
-  - **fields**: An array of field names
-- **vtype**: An array of rules that specify the value type and range
-  - **field**: The field name
-  - **type**: A type string; supports `integer`, `float64`, `bool`
-  - **range**: The value range (applicable to `integer` and `float64`)
-    - **min**: Minimum value
-    - **max**: Maximum value
+  - **fields**: An array of field names.
+- **vtype**: An array of rules that specify the value type and range.
+  - **field**: The field name(support field-expression).
+  - **type**: A type string; supports `integer`, `float64`, `bool`.
+  - **range**: The value range (applicable to `integer` and `float64`).
+    - **min**: Minimum value.
+    - **max**: Maximum value.
 
 ## Cautions
 

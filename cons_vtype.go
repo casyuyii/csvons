@@ -10,7 +10,6 @@ import (
 // @param stem the stem (base name) of the CSV file
 // @param ruler the rules to be tested
 // @param metadata the metadata of the CSV file
-// @example VTypeTest("username", []VType{&VType{Field: "Username", Type: "string", Range: {Min: 1, Max: 100}}}, &Metadata{NameIndex: 0, DataIndex: 1, Extension: ".csv"})
 func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 	if len(ruler) == 0 || metadata == nil {
 		log.Fatalf("ruler [%v] or metadata [%v] is nil", ruler, metadata)
@@ -41,49 +40,62 @@ func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 	log.Printf("src_fields: %q", srcFields)
 
 	for _, vtype := range ruler {
-		srcFieldPos := slices.Index(srcFields, vtype.Field)
+		fieldName, factory := fieldsFactory(vtype.Field, metadata)
+		if fieldName == "" || factory == nil {
+			log.Fatalf("get field name or factory not found: %s", vtype.Field)
+			return
+		}
+
+		srcFieldPos := slices.Index(srcFields, fieldName)
 		if srcFieldPos < 0 {
-			log.Fatalf("src_field not found: %s", vtype.Field)
+			log.Fatalf("src_field not found: %s", fieldName)
 			return
 		}
 
 		for i := dataIndex; i < len(srcRecords); i++ {
-			srcField := srcRecords[i][srcFieldPos]
-			log.Printf("checking src_field [%s] value [%s] of type [%s]", vtype.Field, srcField, vtype.Type)
-
-			switch vtype.Type {
-			case "int":
-				v, ok := strconv.ParseInt(srcField, 10, 64)
-				if ok != nil {
-					log.Fatalf("src_field [%s] value [%s] is not an int", vtype.Field, srcField)
-					return
-				}
-				if vtype.Range != nil {
-					if v > int64(vtype.Range.Max) || v < int64(vtype.Range.Min) {
-						log.Fatalf("src_field [%s] value [%s] is not in the range [%v, %v]", vtype.Field, srcField, vtype.Range.Min, vtype.Range.Max)
-						return
-					}
-				}
-			case "float64":
-				v, ok := strconv.ParseFloat(srcField, 64)
-				if ok != nil {
-					log.Fatalf("src_field [%s] value [%s] is not a float64", vtype.Field, srcField)
-					return
-				}
-				if vtype.Range != nil {
-					if v > vtype.Range.Max || v < vtype.Range.Min {
-						log.Fatalf("src_field [%s] value [%s] is not in the range [%v, %v]", vtype.Field, srcField, vtype.Range.Min, vtype.Range.Max)
-						return
-					}
-				}
-			case "bool":
-				if _, ok := strconv.ParseBool(srcField); ok != nil {
-					log.Fatalf("src_field [%s] value [%s] is not a bool", vtype.Field, srcField)
-					return
-				}
-			default:
-				log.Fatalf("src_field [%s] value [%s] is not a valid type", vtype.Field, srcField)
+			srcFieldVals := factory(srcRecords[i][srcFieldPos])
+			if len(srcFieldVals) == 0 {
+				log.Fatalf("src_field [%s] value [%s] is empty", vtype.Field, srcRecords[i][srcFieldPos])
 				return
+			}
+
+			for _, srcField := range srcFieldVals {
+				log.Printf("checking src_field [%s] value [%s] of type [%s]", vtype.Field, srcField, vtype.Type)
+
+				switch vtype.Type {
+				case "int":
+					v, ok := strconv.ParseInt(srcField, 10, 64)
+					if ok != nil {
+						log.Fatalf("src_field [%s] value [%s] is not an int", vtype.Field, srcField)
+						return
+					}
+					if vtype.Range != nil {
+						if v > int64(vtype.Range.Max) || v < int64(vtype.Range.Min) {
+							log.Fatalf("src_field [%s] value [%s] is not in the range [%v, %v]", vtype.Field, srcField, vtype.Range.Min, vtype.Range.Max)
+							return
+						}
+					}
+				case "float64":
+					v, ok := strconv.ParseFloat(srcField, 64)
+					if ok != nil {
+						log.Fatalf("src_field [%s] value [%s] is not a float64", vtype.Field, srcField)
+						return
+					}
+					if vtype.Range != nil {
+						if v > vtype.Range.Max || v < vtype.Range.Min {
+							log.Fatalf("src_field [%s] value [%s] is not in the range [%v, %v]", vtype.Field, srcField, vtype.Range.Min, vtype.Range.Max)
+							return
+						}
+					}
+				case "bool":
+					if _, ok := strconv.ParseBool(srcField); ok != nil {
+						log.Fatalf("src_field [%s] value [%s] is not a bool", vtype.Field, srcField)
+						return
+					}
+				default:
+					log.Fatalf("src_field [%s] value [%s] is not a valid type", vtype.Field, srcField)
+					return
+				}
 			}
 		}
 	}

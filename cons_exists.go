@@ -9,7 +9,6 @@ import (
 // @param stem the stem (base name) of the CSV file
 // @param ruler the rules to be tested
 // @param metadata the metadata of the CSV file
-// @example ExistsTest("username", []Exists{&Exists{DstFileStem: "username-d1", Fields: []struct {Src string; Dst string}{Src: "Username", Dst: "Username"}}}, &Metadata{NameIndex: 0, DataIndex: 1, Extension: ".csv"})
 func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 	if len(ruler) == 0 || metadata == nil {
 		log.Fatalf("ruler [%v] or metadata [%v] is nil", ruler, metadata)
@@ -51,9 +50,15 @@ func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 		log.Printf("dst_fields: %q", dstFields)
 
 		for _, field := range exist.Fields {
-			srcFieldPos := slices.Index(srcFields, field.Src)
+			fieldName, factory := fieldsFactory(field.Src, metadata)
+			if fieldName == "" || factory == nil {
+				log.Fatalf("get field name or factory not found: %s", field.Src)
+				return
+			}
+
+			srcFieldPos := slices.Index(srcFields, fieldName)
 			if srcFieldPos < 0 {
-				log.Fatalf("src_field not found: %s", field.Src)
+				log.Fatalf("src_field not found: %s", fieldName)
 				return
 			}
 
@@ -65,26 +70,32 @@ func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 
 			searchedFields := make(map[string]int)
 			for i := dataIndex; i < len(srcRecords); i++ {
-				srcField := srcRecords[i][srcFieldPos]
-				if _, ok := searchedFields[srcField]; ok {
-					log.Printf("src_field [%s] value [%s] already searched at row [%d]", field.Src, srcField, searchedFields[srcField])
-					continue
-				}
-
-				for j := dataIndex; j < len(dstRecords); j++ {
-					dstField := dstRecords[j][dstFieldPos]
-					searchedFields[dstField] = j
-					if dstField == srcField {
-						break
-					}
-				}
-
-				rowIndex, ok := searchedFields[srcField]
-				if !ok {
-					log.Fatalf("can't find src_field [%s] value [%s] in dst_records", field.Src, srcField)
+				srcFieldVals := factory(srcRecords[i][srcFieldPos])
+				if len(srcFieldVals) == 0 {
+					log.Fatalf("src_field [%s] value [%s] is empty", field.Src, srcRecords[i][srcFieldPos])
 					return
 				}
-				log.Printf("found src_field [%s] value [%s] in dst_records at row [%d]", field.Src, srcField, rowIndex)
+				for _, srcField := range srcFieldVals {
+					if _, ok := searchedFields[srcField]; ok {
+						log.Printf("src_field [%s] value [%s] already searched at row [%d]", field.Src, srcField, searchedFields[srcField])
+						continue
+					}
+
+					for j := dataIndex; j < len(dstRecords); j++ {
+						dstField := dstRecords[j][dstFieldPos]
+						searchedFields[dstField] = j
+						if dstField == srcField {
+							break
+						}
+					}
+
+					rowIndex, ok := searchedFields[srcField]
+					if !ok {
+						log.Fatalf("can't find src_field [%s] value [%s] in dst_records", field.Src, srcField)
+						return
+					}
+					log.Printf("found src_field [%s] value [%s] in dst_records at row [%d]", field.Src, srcField, rowIndex)
+				}
 			}
 		}
 	}
