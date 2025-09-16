@@ -17,12 +17,13 @@ type ConstrainsConfig struct {
 // @param Extension the file extension (should be ".csv")
 // @example Metadata{CSVFileFolder: "testdata", NameIndex: 0, DataIndex: 1, Extension: ".csv"}
 type Metadata struct {
-	CSVFileFolder string `json:"csv_file_folder"`
-	NameIndex     int    `json:"name_index"`
-	DataIndex     int    `json:"data_index"`
-	Extension     string `json:"extension"`
-	Lev1Separator string `json:"lev1_separator"`
-	Lev2Separator string `json:"lev2_separator"`
+	CSVFileFolder  string `json:"csv_file_folder"`
+	NameIndex      int    `json:"name_index"`
+	DataIndex      int    `json:"data_index"`
+	Extension      string `json:"extension"`
+	Lev1Separator  string `json:"lev1_separator"`
+	Lev2Separator  string `json:"lev2_separator"`
+	FieldConnector string `json:"field_connector"`
 }
 
 // Exists is the constraints for the exists
