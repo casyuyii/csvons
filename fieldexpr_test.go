@@ -183,7 +183,7 @@ func TestGenerateFieldexpr(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := GenerateFieldexpr(tt.fieldExpr)
+			result := GenerateFieldExpr(tt.fieldExpr)
 
 			if tt.shouldBeNil {
 				if result != nil {
@@ -207,9 +207,9 @@ func TestGenerateFieldexpr(t *testing.T) {
 
 func TestFieldexprInterface(t *testing.T) {
 	// Test that all field types implement the Fieldexpr interface
-	var _ Fieldexpr = (*PlainField)(nil)
-	var _ Fieldexpr = (*NestedField)(nil)
-	var _ Fieldexpr = (*ComplexField)(nil)
+	var _ FieldExpr = (*PlainField)(nil)
+	var _ FieldExpr = (*NestedField)(nil)
+	var _ FieldExpr = (*ComplexField)(nil)
 }
 
 func TestInitMethod(t *testing.T) {
@@ -250,7 +250,7 @@ func TestFieldexprMap(t *testing.T) {
 	}
 
 	for i, pattern := range expectedPatterns {
-		constructor, exists := fieldexprMap[pattern]
+		constructor, exists := fieldExprMap[pattern]
 		if !exists {
 			t.Errorf("fieldexprMap missing pattern: %v", pattern)
 			continue
@@ -275,7 +275,7 @@ func TestFieldTypesWithEmptyRecords(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		field  Fieldexpr
+		field  FieldExpr
 		expect bool
 	}{
 		{"PlainField with empty records", plainField, true},
@@ -301,7 +301,7 @@ func TestFieldTypesWithNilRecords(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		field  Fieldexpr
+		field  FieldExpr
 		expect bool
 	}{
 		{"PlainField with nil records", plainField, true},

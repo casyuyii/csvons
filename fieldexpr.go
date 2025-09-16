@@ -4,7 +4,7 @@ import (
 	"regexp"
 )
 
-type Fieldexpr interface {
+type FieldExpr interface {
 	Check(srcRecords [][]string, dstRecords [][]string) bool
 	typeString() string
 	Init(expr string)
@@ -62,14 +62,14 @@ func (c *ComplexField) Init(expr string) {
 
 // -----------------------------
 
-var fieldexprMap = map[string]func(string) Fieldexpr{
-	`^([a-zA-Z0-9]+)$`:      func(string) Fieldexpr { return &PlainField{} },
-	`^([a-zA-Z0-9]+)\[\]$`:  func(string) Fieldexpr { return &NestedField{} },
-	`^(\{[a-zA-Z0-9]+\})+$`: func(string) Fieldexpr { return &ComplexField{} },
+var fieldExprMap = map[string]func(string) FieldExpr{
+	`^([a-zA-Z0-9]+)$`:      func(string) FieldExpr { return &PlainField{} },
+	`^([a-zA-Z0-9]+)\[\]$`:  func(string) FieldExpr { return &NestedField{} },
+	`^(\{[a-zA-Z0-9]+\})+$`: func(string) FieldExpr { return &ComplexField{} },
 }
 
-func GenerateFieldexpr(fieldExpr string) Fieldexpr {
-	for pattern, typ := range fieldexprMap {
+func GenerateFieldExpr(fieldExpr string) FieldExpr {
+	for pattern, typ := range fieldExprMap {
 		if match, _ := regexp.MatchString(pattern, fieldExpr); match {
 			t := typ(fieldExpr)
 			t.Init(fieldExpr)
