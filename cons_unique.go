@@ -2,7 +2,6 @@ package csvons
 
 import (
 	"log"
-	"slices"
 )
 
 // UniqueTest tests if the values in a column of a CSV file are unique.
@@ -39,21 +38,21 @@ func UniqueTest(stem string, ruler *Unique, metadata *Metadata) {
 	log.Printf("src_fields: %q", srcFields)
 
 	for _, fieldName := range ruler.Fields {
-		srcFieldPos := slices.Index(srcFields, fieldName)
-		if srcFieldPos < 0 {
-			log.Fatalf("src_field not found: %s", fieldName)
+		fieldExpr := GenerateFieldExpr(metadata, fieldName)
+		if fieldExpr == nil {
+			log.Fatalf("field expression [%s] is nil", fieldName)
 			return
 		}
+		fieldVals := fieldExpr.FieldValue(srcFields, srcRecords)
 
 		existingFields := make(map[string]int)
-		for i := dataIndex; i < len(srcRecords); i++ {
-			srcField := srcRecords[i][srcFieldPos]
-			if rowIndex, ok := existingFields[srcField]; ok {
-				log.Fatalf("src_field [%s] value [%s] already exists at row [%d]", fieldName, srcField, rowIndex)
-				return
+		for fieldVal := range fieldVals {
+			existingFields[fieldVal] += 1
+			if existingFields[fieldVal] > 1 {
+				log.Fatalf("src_field [%s] value [%s] already exists", fieldName, fieldVal)
 			}
-			existingFields[srcField] = i
 		}
+
 		log.Printf("src_field [%s] values are unique", fieldName)
 	}
 }

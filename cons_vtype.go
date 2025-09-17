@@ -2,7 +2,6 @@ package csvons
 
 import (
 	"log"
-	"slices"
 	"strconv"
 )
 
@@ -40,84 +39,71 @@ func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 	log.Printf("src_fields: %q", srcFields)
 
 	for _, vtype := range ruler {
-		fieldName, factory := fieldsFactory(vtype.Field, metadata)
-		if fieldName == "" || factory == nil {
-			log.Fatalf("get field name or factory not found: %s", vtype.Field)
+		fieldExpr := GenerateFieldExpr(metadata, vtype.Field)
+		if fieldExpr == nil {
+			log.Fatalf("field expression [%s] is nil", vtype.Field)
 			return
 		}
-
-		srcFieldPos := slices.Index(srcFields, fieldName)
-		if srcFieldPos < 0 {
-			log.Fatalf("src_field not found: %s", fieldName)
-			return
-		}
+		fieldVals := fieldExpr.FieldValue(srcFields, srcRecords)
 
 		typedSearchedFieldCache := make(map[string]map[string]bool)
-		for i := dataIndex; i < len(srcRecords); i++ {
-			srcFieldVals := factory(srcRecords[i][srcFieldPos])
-			if len(srcFieldVals) == 0 {
-				log.Fatalf("src_field [%s] value [%s] is empty", vtype.Field, srcRecords[i][srcFieldPos])
-				return
+		for fieldVal := range fieldVals {
+			log.Printf("checking src_field [%s] value [%s] of type [%s]", vtype.Field, fieldVal, vtype.Type)
+
+			if _, ok := typedSearchedFieldCache[vtype.Field]; !ok {
+				typedSearchedFieldCache[vtype.Field] = make(map[string]bool)
 			}
 
-			for _, srcField := range srcFieldVals {
-				log.Printf("checking src_field [%s] value [%s] of type [%s]", vtype.Field, srcField, vtype.Type)
-
-				if _, ok := typedSearchedFieldCache[vtype.Type]; !ok {
-					typedSearchedFieldCache[vtype.Type] = make(map[string]bool)
+			switch vtype.Type {
+			case "int":
+				if _, ok := typedSearchedFieldCache[vtype.Field][fieldVal]; ok {
+					log.Printf("src_field [%s] value [%s] already checked", vtype.Field, fieldVal)
+					continue
 				}
 
-				switch vtype.Type {
-				case "int":
-					if _, ok := typedSearchedFieldCache[vtype.Type][srcField]; ok {
-						log.Printf("src_field [%s] value [%s] already checked", vtype.Field, srcField)
-						continue
-					}
-
-					v, ok := strconv.ParseInt(srcField, 10, 64)
-					if ok != nil {
-						log.Fatalf("src_field [%s] value [%s] is not an int", vtype.Field, srcField)
-						return
-					}
-					if vtype.Range != nil {
-						if v > int64(vtype.Range.Max) || v < int64(vtype.Range.Min) {
-							log.Fatalf("src_field [%s] value [%s] is not in the range [%v, %v]", vtype.Field, srcField, vtype.Range.Min, vtype.Range.Max)
-							return
-						}
-					}
-				case "float64":
-					if _, ok := typedSearchedFieldCache[vtype.Type][srcField]; ok {
-						log.Printf("src_field [%s] value [%s] already checked", vtype.Field, srcField)
-						continue
-					}
-
-					v, ok := strconv.ParseFloat(srcField, 64)
-					if ok != nil {
-						log.Fatalf("src_field [%s] value [%s] is not a float64", vtype.Field, srcField)
-						return
-					}
-					if vtype.Range != nil {
-						if v > vtype.Range.Max || v < vtype.Range.Min {
-							log.Fatalf("src_field [%s] value [%s] is not in the range [%v, %v]", vtype.Field, srcField, vtype.Range.Min, vtype.Range.Max)
-							return
-						}
-					}
-				case "bool":
-					if _, ok := typedSearchedFieldCache[vtype.Type][srcField]; ok {
-						log.Printf("src_field [%s] value [%s] already checked", vtype.Field, srcField)
-						continue
-					}
-
-					if _, ok := strconv.ParseBool(srcField); ok != nil {
-						log.Fatalf("src_field [%s] value [%s] is not a bool", vtype.Field, srcField)
-						return
-					}
-				default:
-					log.Fatalf("src_field [%s] value [%s] is not a valid type", vtype.Field, srcField)
+				v, ok := strconv.ParseInt(fieldVal, 10, 64)
+				if ok != nil {
+					log.Fatalf("src_field [%s] value [%s] is not an int", vtype.Field, fieldVal)
 					return
 				}
-				typedSearchedFieldCache[vtype.Type][srcField] = true
+				if vtype.Range != nil {
+					if v > int64(vtype.Range.Max) || v < int64(vtype.Range.Min) {
+						log.Fatalf("src_field [%s] value [%s] is not in the range [%v, %v]", vtype.Field, fieldVal, vtype.Range.Min, vtype.Range.Max)
+						return
+					}
+				}
+			case "float64":
+				if _, ok := typedSearchedFieldCache[vtype.Field][fieldVal]; ok {
+					log.Printf("src_field [%s] value [%s] already checked", vtype.Field, fieldVal)
+					continue
+				}
+
+				v, ok := strconv.ParseFloat(fieldVal, 64)
+				if ok != nil {
+					log.Fatalf("src_field [%s] value [%s] is not a float64", vtype.Field, fieldVal)
+					return
+				}
+				if vtype.Range != nil {
+					if v > vtype.Range.Max || v < vtype.Range.Min {
+						log.Fatalf("src_field [%s] value [%s] is not in the range [%v, %v]", vtype.Field, fieldVal, vtype.Range.Min, vtype.Range.Max)
+						return
+					}
+				}
+			case "bool":
+				if _, ok := typedSearchedFieldCache[vtype.Field][fieldVal]; ok {
+					log.Printf("src_field [%s] value [%s] already checked", vtype.Field, fieldVal)
+					continue
+				}
+
+				if _, ok := strconv.ParseBool(fieldVal); ok != nil {
+					log.Fatalf("src_field [%s] value [%s] is not a bool", vtype.Field, fieldVal)
+					return
+				}
+			default:
+				log.Fatalf("src_field [%s] value [%s] is not a valid type", vtype.Field, fieldVal)
+				return
 			}
+			typedSearchedFieldCache[vtype.Field][fieldVal] = true
 		}
 	}
 }

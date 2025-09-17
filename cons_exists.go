@@ -2,7 +2,6 @@ package csvons
 
 import (
 	"log"
-	"slices"
 )
 
 // ExistsTest tests if the values in a column of a CSV file exist in a specified column of another file.
@@ -50,51 +49,43 @@ func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 		log.Printf("dst_fields: %q", dstFields)
 
 		for _, field := range exist.Fields {
-			fieldName, factory := fieldsFactory(field.Src, metadata)
-			if fieldName == "" || factory == nil {
-				log.Fatalf("get field name or factory not found: %s", field.Src)
+			srcFieldExpr := GenerateFieldExpr(metadata, field.Src)
+			if srcFieldExpr == nil {
+				log.Fatalf("field expression [%s] is nil", field.Src)
 				return
 			}
+			srcFieldVals := srcFieldExpr.FieldValue(srcFields, srcRecords)
 
-			srcFieldPos := slices.Index(srcFields, fieldName)
-			if srcFieldPos < 0 {
-				log.Fatalf("src_field not found: %s", fieldName)
+			dstFieldExpr := GenerateFieldExpr(metadata, field.Dst)
+			if dstFieldExpr == nil {
+				log.Fatalf("field expression [%s] is nil", field.Dst)
 				return
 			}
-
-			dstFieldPos := slices.Index(dstFields, field.Dst)
-			if dstFieldPos < 0 {
-				log.Fatalf("dst_field not found: %s", field.Dst)
-				return
-			}
+			dstFieldVals := dstFieldExpr.FieldValue(dstFields, dstRecords)
 
 			searchedFields := make(map[string]int)
-			for i := dataIndex; i < len(srcRecords); i++ {
-				srcFieldVals := factory(srcRecords[i][srcFieldPos])
-				if len(srcFieldVals) == 0 {
-					log.Fatalf("src_field [%s] value [%s] is empty", field.Src, srcRecords[i][srcFieldPos])
-					return
+			cacheDstFieldVals := make(map[string]bool)
+			for fieldVal := range srcFieldVals {
+				if _, ok := searchedFields[fieldVal]; ok {
+					log.Printf("src_field [%s] value [%s] already searched at row [%d]", field.Src, fieldVal, searchedFields[fieldVal])
+					continue
 				}
-				for _, srcField := range srcFieldVals {
-					if _, ok := searchedFields[srcField]; ok {
-						log.Printf("src_field [%s] value [%s] already searched at row [%d]", field.Src, srcField, searchedFields[srcField])
-						continue
-					}
 
-					for j := dataIndex; j < len(dstRecords); j++ {
-						dstField := dstRecords[j][dstFieldPos]
-						searchedFields[dstField] = j
-						if dstField == srcField {
-							break
-						}
-					}
+				if _, ok := cacheDstFieldVals[fieldVal]; ok {
+					log.Printf("src_field [%s] value [%s] hit cache", field.Src, fieldVal)
+					continue
+				}
 
-					rowIndex, ok := searchedFields[srcField]
-					if !ok {
-						log.Fatalf("can't find src_field [%s] value [%s] in dst_records", field.Src, srcField)
-						return
+				for dstFieldVal := range dstFieldVals {
+					cacheDstFieldVals[dstFieldVal] = true
+					if dstFieldVal == fieldVal {
+						log.Printf("found src_field [%s] value [%s] in dst_records", field.Src, fieldVal)
+						break
 					}
-					log.Printf("found src_field [%s] value [%s] in dst_records at row [%d]", field.Src, srcField, rowIndex)
+				}
+
+				if _, ok := cacheDstFieldVals[fieldVal]; !ok {
+					log.Fatalf("src_field [%s] value [%s] not found in dst_records", field.Src, fieldVal)
 				}
 			}
 		}

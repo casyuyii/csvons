@@ -6,8 +6,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 )
 
 var (
@@ -77,43 +75,4 @@ func readCsvFile(stem string, metadata *Metadata) [][]string {
 	}
 
 	return records
-}
-
-func fieldsFactory(fieldExpr string, metadata *Metadata) (string, func(string) []string) {
-	if metadata == nil {
-		log.Println("metadata is nil")
-		return "", nil
-	}
-
-	if strings.HasSuffix(fieldExpr, "[]") {
-		return strings.TrimSuffix(fieldExpr, "[]"), func(input string) []string {
-			return strings.Split(input, metadata.Lev1Separator)
-		}
-	}
-
-	if eLen := len(fieldExpr); eLen > 3 && fieldExpr[eLen-3] == '{' && fieldExpr[eLen-1] == '}' {
-		i, err := strconv.Atoi(fieldExpr[eLen-2 : eLen-1])
-		if err != nil {
-			log.Printf("error parsing field expression [%s]: %v", fieldExpr, err)
-			return "", nil
-		}
-
-		return fieldExpr[:eLen-3], func(input string) []string {
-			lev1Vals := strings.Split(input, metadata.Lev1Separator)
-			rst := make([]string, 0)
-			for _, v := range lev1Vals {
-				lev2Vals := strings.Split(v, metadata.Lev2Separator)
-				if i >= len(lev2Vals) {
-					return nil
-				}
-				rst = append(rst, lev2Vals[i])
-			}
-
-			return rst
-		}
-	}
-
-	return fieldExpr, func(input string) []string {
-		return []string{input}
-	}
 }

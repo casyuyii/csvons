@@ -10,7 +10,7 @@
           },
           {
             "src": "marks{0}",
-            "dst": " Identifier"
+            "dst": "Identifier"
           }
         ]
       },
@@ -34,7 +34,7 @@
       }
     ],
     "unique": {
-      "fields": ["Username"]
+      "fields": ["Username", "marks{0}"]
     },
     "vtype": [
       {
