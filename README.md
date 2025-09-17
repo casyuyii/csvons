@@ -13,7 +13,14 @@ Use a JSON file (ruler.json) to configure constraints between CSV files
 
 Apart from csvons_metadata, each key in the ruler.json file represents the stem (base name) of a CSV file, and its value defines the rules (constraints) for that file.
 
-Field can be a field-expression. For example: marks[]. Suppose the original value of marks is "100;1002;100". It will check the values "100", "1002", and "100". The suffix {n} can be used to specify a two-level nested value, where n is the index (starting at 0) of the sub-array. For example, if the value is "100:102:31;12:12;2323:212" and n is 1, the values checked are "102", "12", and "212".
+All field name can be a field-expression. There are four types of field expressions supported:
+
+1. **Simple field**: Direct column name reference (e.g., `"Username"`)
+2. **Array field**: Access elements within array-like values (e.g., `"Tags[]"` for each element)
+3. **Nested field**: Access values from a second-level array (e.g., `"marks{1}"` retrieves the value at index 1 from each entry in a two-dimensional array).
+4. **Complex field**: Combine multiple plain field (e.g., `"{data}{key}"`)
+
+Field expressions enable validation of values within nested data structures, not just simple column values.
 
 ## Structure of metadata
 
@@ -26,13 +33,13 @@ Field can be a field-expression. For example: marks[]. Suppose the original valu
 
 - **exists**: An array of rules that specify that the values in a column of this CSV file must also exist in a specified column of another file.
   - **dst_file_stem**: The stem (base name) of the target CSV file.
-  - **fields**: A pair of column names to be compared.
-    - **src**: The column name in the source file(support field-expression).
-    - **dst**: The column name in the target file.
+  - **fields**: A pair of field names to be compared.
+    - **src**: The field name in the source file.
+    - **dst**: The field name in the target file.
 - **unique**: All values in the same cloumn are unique.
   - **fields**: An array of field names.
 - **vtype**: An array of rules that specify the value type and range.
-  - **field**: The field name(support field-expression).
+  - **field**: The field name.
   - **type**: A type string; supports `integer`, `float64`, `bool`.
   - **range**: The value range (applicable to `integer` and `float64`).
     - **min**: Minimum value.
