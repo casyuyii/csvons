@@ -11,7 +11,7 @@ func main() {
 	configFileName := "./ruler.json"
 	rules, metadata := csvons.ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {
-		log.Fatal("read config file error", "file_name", configFileName)
+		log.Fatalf("read config file error: file_name=%s", configFileName)
 		return
 	}
 
@@ -19,7 +19,7 @@ func main() {
 		rulers := map[string]json.RawMessage{}
 		err := json.Unmarshal(v, &rulers)
 		if err != nil {
-			log.Fatal("error unmarshalling rulers", "error", err)
+			log.Fatalf("error unmarshalling rulers: error=%v", err)
 			return
 		}
 
@@ -29,7 +29,7 @@ func main() {
 				var exists []csvons.Exists
 				err := json.Unmarshal(v, &exists)
 				if err != nil {
-					log.Fatal("error unmarshalling exists", "error", err)
+					log.Fatalf("error unmarshalling exists: error=%v", err)
 					return
 				}
 				csvons.ExistsTest(stem, exists, metadata)
@@ -37,7 +37,7 @@ func main() {
 				var unique csvons.Unique
 				err := json.Unmarshal(v, &unique)
 				if err != nil {
-					log.Fatal("error unmarshalling unique", "error", err)
+					log.Fatalf("error unmarshalling unique: error=%v", err)
 					return
 				}
 				csvons.UniqueTest(stem, &unique, metadata)
@@ -45,7 +45,7 @@ func main() {
 				var vtype []csvons.VType
 				err := json.Unmarshal(v, &vtype)
 				if err != nil {
-					log.Fatal("error unmarshalling vtype", "error", err)
+					log.Fatalf("error unmarshalling vtype: error=%v", err)
 					return
 				}
 				csvons.VTypeTest(stem, vtype, metadata)

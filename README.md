@@ -45,6 +45,12 @@ Field expressions enable validation of values within nested data structures, not
     - **min**: Minimum value.
     - **max**: Maximum value.
 
+## How to testing
+
+```bash
+    go test ./src -v
+```
+
 ## Cautions
 
 - Use Go's default [CSV library](https://pkg.go.dev/encoding/csv#pkg-overview); it supports only the [RFC4180](https://www.rfc-editor.org/rfc/rfc4180.html) specification.
