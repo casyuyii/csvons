@@ -29,7 +29,7 @@ func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 	}
 	log.Printf("data_index: %d", dataIndex)
 
-	srcRecords := readCsvFile(stem, metadata)
+	srcRecords := ReadCsvFile(stem, metadata)
 	if srcLen := len(srcRecords); srcLen <= dataIndex {
 		log.Fatalf("src_records length [%d] <= data_index [%d]", srcLen, dataIndex)
 		return
@@ -38,7 +38,7 @@ func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 	log.Printf("src_fields: %q", srcFields)
 
 	for _, exist := range ruler {
-		dstRecords := readCsvFile(exist.DstFileStem, metadata)
+		dstRecords := ReadCsvFile(exist.DstFileStem, metadata)
 		if dstLen := len(dstRecords); dstLen <= dataIndex {
 			log.Fatalf("dst_records length [%d] <= data_index [%d]", dstLen, dataIndex)
 			return

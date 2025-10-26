@@ -15,8 +15,8 @@ var (
 // read config file
 // @param configFileName the name of the config file
 // @return a map of the config file and the metadata
-// @example readConfigFile("ruler.json")
-func readConfigFile(configFileName string) (map[string]json.RawMessage, *Metadata) {
+// @example ReadConfigFile("ruler.json")
+func ReadConfigFile(configFileName string) (map[string]json.RawMessage, *Metadata) {
 	data, err := os.ReadFile(configFileName)
 	if err != nil {
 		log.Printf("error opening file %s: %v", configFileName, err)
@@ -53,8 +53,8 @@ func readConfigFile(configFileName string) (map[string]json.RawMessage, *Metadat
 // read csv file
 // @note file not cached, each file should only be read once
 // @param stem the stem of the csv file
-// @example readCsvFile("username", &Metadata{CSVFileFolder: "testdata", Extension: ".csv"})
-func readCsvFile(stem string, metadata *Metadata) [][]string {
+// @example ReadCsvFile("username", &Metadata{CSVFileFolder: "testdata", Extension: ".csv"})
+func ReadCsvFile(stem string, metadata *Metadata) [][]string {
 	if metadata == nil {
 		log.Println("metadata is nil")
 		return nil

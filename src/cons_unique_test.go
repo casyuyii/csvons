@@ -6,9 +6,9 @@ import (
 	"testing"
 )
 
-func TestVType(t *testing.T) {
+func TestUnique(t *testing.T) {
 	configFileName := "./ruler.json"
-	rules, metadata := readConfigFile(configFileName)
+	rules, metadata := ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {
 		log.Fatal("read config file error", "file_name", configFileName)
 		return
@@ -23,14 +23,14 @@ func TestVType(t *testing.T) {
 		}
 
 		for k, v := range rulers {
-			if k == "vtype" {
-				var vtype []VType
-				err := json.Unmarshal(v, &vtype)
+			if k == "unique" {
+				var unique Unique
+				err := json.Unmarshal(v, &unique)
 				if err != nil {
 					log.Fatal("error unmarshalling unique", "error", err)
 					return
 				}
-				VTypeTest(stem, vtype, metadata)
+				UniqueTest(stem, &unique, metadata)
 			}
 		}
 	}

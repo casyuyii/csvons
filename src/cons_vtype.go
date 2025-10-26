@@ -30,7 +30,7 @@ func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 	}
 	log.Printf("data_index: %d", dataIndex)
 
-	srcRecords := readCsvFile(stem, metadata)
+	srcRecords := ReadCsvFile(stem, metadata)
 	if srcLen := len(srcRecords); srcLen <= dataIndex {
 		log.Fatalf("src_records length [%d] <= data_index [%d]", srcLen, dataIndex)
 		return

@@ -8,7 +8,7 @@ import (
 
 func TestExists(t *testing.T) {
 	configFileName := "./ruler.json"
-	rules, metadata := readConfigFile(configFileName)
+	rules, metadata := ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {
 		log.Fatal("read config file error", "file_name", configFileName)
 		return
