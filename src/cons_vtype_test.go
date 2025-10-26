@@ -3,10 +3,29 @@ package csvons
 import (
 	"encoding/json"
 	"log"
+	"os"
 	"testing"
 )
 
 func TestVType(t *testing.T) {
+	oldDir, err := os.Getwd()
+	if err != nil {
+		log.Fatal("error getting working directory", "error", err)
+		return
+	}
+	defer func() {
+		err := os.Chdir(oldDir)
+		if err != nil {
+			log.Fatal("error changing directory back to old directory", "error", err)
+			return
+		}
+	}()
+	err = os.Chdir("..")
+	if err != nil {
+		log.Fatal("error changing directory", "error", err)
+		return
+	}
+
 	configFileName := "./ruler.json"
 	rules, metadata := ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {
