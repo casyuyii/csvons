@@ -4,10 +4,38 @@ Use a JSON file (ruler.json) to configure constraints between CSV files
 
 ## Features
 
-- [x] Validate that values in a colum exists in a specified column of another file.
+- [x] Validate that values in a column exists in a specified column of another file.
 - [x] Ensure that values in a column are unique.
-- [x] Check type and range of cloumn values.
+- [x] Check type and range of column values.
 - [x] Enable value checking within nested arrays.
+
+## Project Structure
+
+```
+csvons/
+├── cmd/csvons/          # Main application entry point
+├── internal/csvons/     # Core library (types, validators, field expressions)
+├── testdata/            # CSV test data files and ruler JSON configs
+└── ruler.json           # Default constraint configuration
+```
+
+## How to build
+
+```bash
+go build -o cmd/csvons/csvons ./cmd/csvons/
+```
+
+## How to run
+
+```bash
+./cmd/csvons/csvons
+```
+
+## How to testing
+
+```bash
+go test ./internal/csvons/ -v
+```
 
 ## How to write ruler.json
 
@@ -36,7 +64,7 @@ Field expressions enable validation of values within nested data structures, not
   - **fields**: A pair of field names to be compared.
     - **src**: The field name in the source file.
     - **dst**: The field name in the target file.
-- **unique**: All values in the same cloumn are unique.
+- **unique**: All values in the same column are unique.
   - **fields**: An array of field names.
 - **vtype**: An array of rules that specify the value type and range.
   - **field**: The field name.
@@ -44,12 +72,6 @@ Field expressions enable validation of values within nested data structures, not
   - **range**: The value range (applicable to `integer` and `float64`).
     - **min**: Minimum value.
     - **max**: Maximum value.
-
-## How to testing
-
-```bash
-    go test ./src -v
-```
 
 ## Cautions
 

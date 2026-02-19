@@ -1,0 +1,51 @@
+{
+    "products": {
+        "exists": [
+            {
+                "dst_file_stem": "products-d1",
+                "fields": [
+                    {
+                        "src": "ProductID",
+                        "dst": "ProductID"
+                    }
+                ]
+            }
+        ],
+        "unique": {
+            "fields": [
+                "ProductID"
+            ]
+        },
+        "vtype": [
+            {
+                "field": "Price",
+                "type": "float64",
+                "range": {
+                    "min": 0.01,
+                    "max": 9999.99
+                }
+            },
+            {
+                "field": "Stock",
+                "type": "int",
+                "range": {
+                    "min": 0,
+                    "max": 10000
+                }
+            },
+            {
+                "field": "Available",
+                "type": "bool"
+            }
+        ]
+    },
+    "csvons_metadata": {
+        "csv_file_folder": "testdata",
+        "name_index": 0,
+        "data_index": 1,
+        "extension": ".csv",
+        "lev1_separator": ";",
+        "lev2_separator": ":",
+        "field_connector": "|"
+    }
+}

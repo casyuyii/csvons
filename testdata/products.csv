@@ -1,0 +1,9 @@
+ProductID,Name,Price,Stock,Available,Categories
+P001,Laptop,999.99,50,true,"electronics;computers"
+P002,Mouse,29.99,200,true,"electronics;peripherals"
+P003,Keyboard,79.50,150,true,"electronics;peripherals"
+P004,Monitor,349.00,75,false,"electronics;displays"
+P005,Headphones,149.99,120,true,"electronics;audio"
+P006,USB Cable,9.99,500,true,"accessories;cables"
+P007,Webcam,89.00,60,true,"electronics;peripherals"
+P008,Desk Lamp,45.50,30,false,"furniture;lighting"

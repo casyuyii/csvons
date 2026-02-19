@@ -1,0 +1,7 @@
+OrderID,CustomerID,Items,Scores
+ORD001,C100,"widget:5;gadget:3","85:92;78:88"
+ORD002,C101,"bolt:10;nut:20","90:95;88:91"
+ORD003,C102,"widget:2;screw:100","70:80;65:75"
+ORD004,C100,"gadget:1;bolt:5","95:99;92:96"
+ORD005,C103,"nut:50;screw:25","80:85;77:82"
+ORD006,C104,"widget:7;gadget:2","88:93;84:89"

@@ -4,17 +4,23 @@ import (
 	"log"
 )
 
-// UniqueTest tests if the values in a column of a CSV file are unique.
-// @param stem the stem (base name) of the CSV file
-// @param ruler the rules to be tested
-// @param metadata the metadata of the CSV file
+// UniqueTest validates that all values in specified columns of a CSV file are unique.
+//
+// For each field name in the ruler's Fields list, it:
+//  1. Creates a field expression from the field name
+//  2. Extracts all values from the corresponding column
+//  3. Counts occurrences and fails if any value appears more than once
+//
+// Calls log.Fatalf if any duplicate is found or if parameters are invalid.
 func UniqueTest(stem string, ruler *Unique, metadata *Metadata) {
+	// Validate input parameters.
 	if ruler == nil || metadata == nil {
 		log.Fatalf("ruler [%v] or metadata [%v] is nil", ruler, metadata)
 		return
 	}
 	log.Printf("checking src file %s ...", stem)
 
+	// Validate metadata indices.
 	nameIndex := metadata.NameIndex
 	if nameIndex < 0 {
 		log.Fatalf("name_index [%d] is less than 0", nameIndex)
@@ -29,6 +35,7 @@ func UniqueTest(stem string, ruler *Unique, metadata *Metadata) {
 	}
 	log.Printf("data_index: %d", dataIndex)
 
+	// Read the source CSV file and validate it has enough rows.
 	srcRecords := ReadCsvFile(stem, metadata)
 	if srcLen := len(srcRecords); srcLen <= dataIndex {
 		log.Fatalf("src_records length [%d] <= data_index [%d]", srcLen, dataIndex)
@@ -37,7 +44,9 @@ func UniqueTest(stem string, ruler *Unique, metadata *Metadata) {
 	srcFields := srcRecords[nameIndex]
 	log.Printf("src_fields: %q", srcFields)
 
+	// Check uniqueness for each specified field.
 	for _, fieldName := range ruler.Fields {
+		// Create field expression to extract values from the column.
 		fieldExpr := GenerateFieldExpr(metadata, fieldName)
 		if fieldExpr == nil {
 			log.Fatalf("field expression [%s] is nil", fieldName)
@@ -45,6 +54,7 @@ func UniqueTest(stem string, ruler *Unique, metadata *Metadata) {
 		}
 		fieldVals := fieldExpr.FieldValue(srcFields, srcRecords)
 
+		// Track value occurrences; fail on any duplicate.
 		existingFields := make(map[string]int)
 		for fieldVal := range fieldVals {
 			existingFields[fieldVal] += 1

@@ -1,0 +1,43 @@
+{
+    "employees": {
+        "exists": [
+            {
+                "dst_file_stem": "departments",
+                "fields": [
+                    {
+                        "src": "DeptCode",
+                        "dst": "DeptCode"
+                    }
+                ]
+            }
+        ],
+        "unique": {
+            "fields": [
+                "EmployeeID"
+            ]
+        },
+        "vtype": [
+            {
+                "field": "Salary",
+                "type": "int",
+                "range": {
+                    "min": 30000,
+                    "max": 200000
+                }
+            },
+            {
+                "field": "Active",
+                "type": "bool"
+            }
+        ]
+    },
+    "csvons_metadata": {
+        "csv_file_folder": "testdata",
+        "name_index": 0,
+        "data_index": 1,
+        "extension": ".csv",
+        "lev1_separator": ";",
+        "lev2_separator": ":",
+        "field_connector": "|"
+    }
+}

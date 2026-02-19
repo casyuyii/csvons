@@ -4,6 +4,8 @@ import (
 	"testing"
 )
 
+// TestPlainField_FieldValue verifies that PlainField correctly extracts
+// values from a single column across all data rows.
 func TestPlainField_FieldValue(t *testing.T) {
 	metadata := &Metadata{
 		DataIndex: 1,
@@ -38,6 +40,7 @@ func TestPlainField_FieldValue(t *testing.T) {
 	}
 }
 
+// TestPlainField_typeString verifies the type identifier string for PlainField.
 func TestPlainField_typeString(t *testing.T) {
 	field := &PlainField{}
 	result := field.typeString()
@@ -47,6 +50,7 @@ func TestPlainField_typeString(t *testing.T) {
 	}
 }
 
+// TestPlainField_Init verifies that Init correctly sets metadata and field name.
 func TestPlainField_Init(t *testing.T) {
 	metadata := &Metadata{DataIndex: 1}
 	field := &PlainField{}
@@ -60,6 +64,8 @@ func TestPlainField_Init(t *testing.T) {
 	}
 }
 
+// TestRepeatField_FieldValue verifies that RepeatField correctly splits
+// cell values by the level-1 separator and yields each element.
 func TestRepeatField_FieldValue(t *testing.T) {
 	metadata := &Metadata{
 		DataIndex:     1,
@@ -95,6 +101,7 @@ func TestRepeatField_FieldValue(t *testing.T) {
 	}
 }
 
+// TestRepeatField_typeString verifies the type identifier string for RepeatField.
 func TestRepeatField_typeString(t *testing.T) {
 	field := &RepeatField{}
 	result := field.typeString()
@@ -104,6 +111,7 @@ func TestRepeatField_typeString(t *testing.T) {
 	}
 }
 
+// TestRepeatField_Init verifies that Init correctly strips the "[]" suffix.
 func TestRepeatField_Init(t *testing.T) {
 	metadata := &Metadata{DataIndex: 1}
 	field := &RepeatField{}
@@ -117,6 +125,8 @@ func TestRepeatField_Init(t *testing.T) {
 	}
 }
 
+// TestNestedField_FieldValue verifies that NestedField correctly splits
+// by both separators and extracts the value at the specified index.
 func TestNestedField_FieldValue(t *testing.T) {
 	metadata := &Metadata{
 		DataIndex:     1,
@@ -154,6 +164,7 @@ func TestNestedField_FieldValue(t *testing.T) {
 	}
 }
 
+// TestNestedField_typeString verifies the type identifier string for NestedField.
 func TestNestedField_typeString(t *testing.T) {
 	field := &NestedField{}
 	result := field.typeString()
@@ -163,6 +174,7 @@ func TestNestedField_typeString(t *testing.T) {
 	}
 }
 
+// TestNestedField_Init verifies that Init correctly parses the field name and index.
 func TestNestedField_Init(t *testing.T) {
 	metadata := &Metadata{DataIndex: 1}
 	field := &NestedField{}
@@ -179,6 +191,8 @@ func TestNestedField_Init(t *testing.T) {
 	}
 }
 
+// TestComplexField_FieldValue verifies that ComplexField correctly concatenates
+// values from multiple columns using the field connector.
 func TestComplexField_FieldValue(t *testing.T) {
 	metadata := &Metadata{
 		DataIndex:      1,
@@ -214,6 +228,7 @@ func TestComplexField_FieldValue(t *testing.T) {
 	}
 }
 
+// TestComplexField_typeString verifies the type identifier string for ComplexField.
 func TestComplexField_typeString(t *testing.T) {
 	field := &ComplexField{}
 	result := field.typeString()
@@ -223,6 +238,7 @@ func TestComplexField_typeString(t *testing.T) {
 	}
 }
 
+// TestComplexField_Init verifies that Init correctly parses field names from curly braces.
 func TestComplexField_Init(t *testing.T) {
 	metadata := &Metadata{DataIndex: 1}
 	field := &ComplexField{}
@@ -242,6 +258,8 @@ func TestComplexField_Init(t *testing.T) {
 	}
 }
 
+// TestGenerateFieldExpr uses table-driven tests to verify that GenerateFieldExpr
+// correctly identifies and creates the appropriate FieldExpr type for each expression pattern.
 func TestGenerateFieldExpr(t *testing.T) {
 	metadata := &Metadata{
 		DataIndex:      1,
@@ -372,22 +390,24 @@ func TestGenerateFieldExpr(t *testing.T) {
 	}
 }
 
+// TestGenerateFieldExpr_NilMetadata tests the nil metadata case.
+// Skipped because log.Fatal will exit the program in a unit test environment.
 func TestGenerateFieldExpr_NilMetadata(t *testing.T) {
-	// This test is skipped because log.Fatal will exit the program
-	// and we can't test it in a unit test environment
 	t.Skip("Skipping nil metadata test - log.Fatal exits program")
 }
 
+// TestFieldExprInterface verifies that all field types correctly implement
+// the FieldExpr interface at compile time.
 func TestFieldExprInterface(t *testing.T) {
-	// Test that all field types implement the FieldExpr interface
 	var _ FieldExpr = (*PlainField)(nil)
 	var _ FieldExpr = (*RepeatField)(nil)
 	var _ FieldExpr = (*NestedField)(nil)
 	var _ FieldExpr = (*ComplexField)(nil)
 }
 
+// TestFieldExprMap verifies that fieldExprMap contains the expected regex patterns
+// and that each constructor creates an instance of the correct type.
 func TestFieldExprMap(t *testing.T) {
-	// Test that the fieldExprMap contains the expected patterns and creates correct types
 	expectedPatterns := []string{
 		`^[a-zA-Z0-9]+$`,
 		`^[a-zA-Z0-9]+\[\]$`,
@@ -409,7 +429,7 @@ func TestFieldExprMap(t *testing.T) {
 			continue
 		}
 
-		// Test that the constructor creates the right type
+		// Verify the constructor creates the right type.
 		instance := constructor("test")
 		actualType := instance.typeString()
 		if actualType != expectedTypes[i] {
@@ -418,8 +438,9 @@ func TestFieldExprMap(t *testing.T) {
 	}
 }
 
+// TestFieldTypesWithEmptyRecords verifies that all field types handle
+// empty records gracefully by returning zero values through the channel.
 func TestFieldTypesWithEmptyRecords(t *testing.T) {
-	// Test field types with empty records
 	metadata := &Metadata{DataIndex: 1}
 	emptyRecords := [][]string{}
 
@@ -433,7 +454,7 @@ func TestFieldTypesWithEmptyRecords(t *testing.T) {
 	tests := []struct {
 		name   string
 		field  FieldExpr
-		expect int // expected number of values
+		expect int // Expected number of output values.
 	}{
 		{"PlainField with empty records", plainField, 0},
 		{"RepeatField with empty records", repeatField, 0},
@@ -455,8 +476,9 @@ func TestFieldTypesWithEmptyRecords(t *testing.T) {
 	}
 }
 
+// TestFieldTypesWithNilRecords verifies that all field types handle
+// nil records gracefully by returning zero values through the channel.
 func TestFieldTypesWithNilRecords(t *testing.T) {
-	// Test field types with nil records
 	metadata := &Metadata{DataIndex: 1}
 	fields := []string{"field1"}
 
@@ -468,7 +490,7 @@ func TestFieldTypesWithNilRecords(t *testing.T) {
 	tests := []struct {
 		name   string
 		field  FieldExpr
-		expect int // expected number of values
+		expect int // Expected number of output values.
 	}{
 		{"PlainField with nil records", plainField, 0},
 		{"RepeatField with nil records", repeatField, 0},
@@ -490,8 +512,9 @@ func TestFieldTypesWithNilRecords(t *testing.T) {
 	}
 }
 
+// TestFieldNotFound verifies that all field types return nil when
+// the specified field is not present in the column headers.
 func TestFieldNotFound(t *testing.T) {
-	// Test behavior when field is not found in the fields slice
 	metadata := &Metadata{DataIndex: 1}
 	fields := []string{"otherField"}
 	records := [][]string{

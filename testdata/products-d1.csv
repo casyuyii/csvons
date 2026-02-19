@@ -1,0 +1,9 @@
+ProductID,Supplier,Warehouse
+P001,SupplierA,WH-North
+P002,SupplierB,WH-South
+P003,SupplierB,WH-South
+P004,SupplierC,WH-East
+P005,SupplierA,WH-North
+P006,SupplierD,WH-West
+P007,SupplierC,WH-East
+P008,SupplierE,WH-South

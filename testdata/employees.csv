@@ -1,0 +1,9 @@
+EmployeeID,Name,DeptCode,Salary,Active
+E001,John Smith,ENG,85000,true
+E002,Jane Doe,MKT,72000,true
+E003,Bob Wilson,ENG,91000,false
+E004,Alice Brown,HR,68000,true
+E005,Charlie Davis,MKT,75000,true
+E006,Diana Lee,FIN,82000,true
+E007,Frank Miller,ENG,95000,true
+E008,Grace Chen,HR,70000,false

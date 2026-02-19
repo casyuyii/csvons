@@ -1,0 +1,47 @@
+{
+    "orders": {
+        "exists": [
+            {
+                "dst_file_stem": "orders-d1",
+                "fields": [
+                    {
+                        "src": "CustomerID",
+                        "dst": "CustomerID"
+                    }
+                ]
+            }
+        ],
+        "unique": {
+            "fields": [
+                "OrderID"
+            ]
+        },
+        "vtype": [
+            {
+                "field": "Scores{0}",
+                "type": "int",
+                "range": {
+                    "min": 0,
+                    "max": 100
+                }
+            },
+            {
+                "field": "Scores{1}",
+                "type": "int",
+                "range": {
+                    "min": 0,
+                    "max": 100
+                }
+            }
+        ]
+    },
+    "csvons_metadata": {
+        "csv_file_folder": "testdata",
+        "name_index": 0,
+        "data_index": 1,
+        "extension": ".csv",
+        "lev1_separator": ";",
+        "lev2_separator": ":",
+        "field_connector": "|"
+    }
+}
