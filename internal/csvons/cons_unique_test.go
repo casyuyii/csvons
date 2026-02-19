@@ -9,7 +9,7 @@ import (
 // TestUnique validates the "unique" constraint using the original ruler.json.
 func TestUnique(t *testing.T) {
 	root := projectRoot()
-	configFileName := filepath.Join(root, "ruler.json")
+	configFileName := filepath.Join(root, "ruler", "ruler.json")
 
 	rules, metadata := ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {
@@ -39,7 +39,7 @@ func TestUnique(t *testing.T) {
 // TestUniqueProducts validates unique constraints using the products test data.
 func TestUniqueProducts(t *testing.T) {
 	root := projectRoot()
-	configFileName := filepath.Join(root, "testdata", "ruler_products.json")
+	configFileName := filepath.Join(root, "ruler", "ruler_products.json")
 
 	rules, metadata := ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {
@@ -68,7 +68,7 @@ func TestUniqueProducts(t *testing.T) {
 // TestUniqueOrders validates unique constraints using the orders test data.
 func TestUniqueOrders(t *testing.T) {
 	root := projectRoot()
-	configFileName := filepath.Join(root, "testdata", "ruler_orders.json")
+	configFileName := filepath.Join(root, "ruler", "ruler_orders.json")
 
 	rules, metadata := ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {
@@ -97,7 +97,7 @@ func TestUniqueOrders(t *testing.T) {
 // TestUniqueEmployees validates unique constraints using the employees test data.
 func TestUniqueEmployees(t *testing.T) {
 	root := projectRoot()
-	configFileName := filepath.Join(root, "testdata", "ruler_employees.json")
+	configFileName := filepath.Join(root, "ruler", "ruler_employees.json")
 
 	rules, metadata := ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {

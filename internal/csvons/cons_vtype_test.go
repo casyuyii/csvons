@@ -9,7 +9,7 @@ import (
 // TestVType validates the "vtype" constraint using the original ruler.json.
 func TestVType(t *testing.T) {
 	root := projectRoot()
-	configFileName := filepath.Join(root, "ruler.json")
+	configFileName := filepath.Join(root, "ruler", "ruler.json")
 
 	rules, metadata := ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {
@@ -40,7 +40,7 @@ func TestVType(t *testing.T) {
 // Tests float64 (Price), int (Stock), and bool (Available) types.
 func TestVTypeProducts(t *testing.T) {
 	root := projectRoot()
-	configFileName := filepath.Join(root, "testdata", "ruler_products.json")
+	configFileName := filepath.Join(root, "ruler", "ruler_products.json")
 
 	rules, metadata := ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {
@@ -70,7 +70,7 @@ func TestVTypeProducts(t *testing.T) {
 // Tests nested field expressions (Scores{0}, Scores{1}) with int type.
 func TestVTypeOrders(t *testing.T) {
 	root := projectRoot()
-	configFileName := filepath.Join(root, "testdata", "ruler_orders.json")
+	configFileName := filepath.Join(root, "ruler", "ruler_orders.json")
 
 	rules, metadata := ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {
@@ -100,7 +100,7 @@ func TestVTypeOrders(t *testing.T) {
 // Tests int (Salary) with range and bool (Active) types.
 func TestVTypeEmployees(t *testing.T) {
 	root := projectRoot()
-	configFileName := filepath.Join(root, "testdata", "ruler_employees.json")
+	configFileName := filepath.Join(root, "ruler", "ruler_employees.json")
 
 	rules, metadata := ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {

@@ -20,7 +20,7 @@ func projectRoot() string {
 // against the CSV test data in testdata/.
 func TestExists(t *testing.T) {
 	root := projectRoot()
-	configFileName := filepath.Join(root, "ruler.json")
+	configFileName := filepath.Join(root, "ruler", "ruler.json")
 
 	rules, metadata := ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {
@@ -51,7 +51,7 @@ func TestExists(t *testing.T) {
 // TestExistsProducts validates exists constraints using the products test data.
 func TestExistsProducts(t *testing.T) {
 	root := projectRoot()
-	configFileName := filepath.Join(root, "testdata", "ruler_products.json")
+	configFileName := filepath.Join(root, "ruler", "ruler_products.json")
 
 	rules, metadata := ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {
@@ -80,7 +80,7 @@ func TestExistsProducts(t *testing.T) {
 // TestExistsOrders validates exists constraints using the orders test data.
 func TestExistsOrders(t *testing.T) {
 	root := projectRoot()
-	configFileName := filepath.Join(root, "testdata", "ruler_orders.json")
+	configFileName := filepath.Join(root, "ruler", "ruler_orders.json")
 
 	rules, metadata := ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {
@@ -109,7 +109,7 @@ func TestExistsOrders(t *testing.T) {
 // TestExistsEmployees validates exists constraints using the employees test data.
 func TestExistsEmployees(t *testing.T) {
 	root := projectRoot()
-	configFileName := filepath.Join(root, "testdata", "ruler_employees.json")
+	configFileName := filepath.Join(root, "ruler", "ruler_employees.json")
 
 	rules, metadata := ReadConfigFile(configFileName)
 	if rules == nil || metadata == nil {
