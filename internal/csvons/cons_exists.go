@@ -67,11 +67,19 @@ func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 		for _, field := range exist.Fields {
 			// Create field expression for the source column.
 			srcFieldExpr := GenerateFieldExpr(metadata, field.Src)
-			srcFieldVals := requiredFieldValues(srcFieldExpr, field.Src, srcFields, srcRecords)
+			if srcFieldExpr == nil {
+				failf("field expression [%s] is nil", field.Src)
+				return
+			}
+			srcFieldVals := srcFieldExpr.FieldValue(srcFields, srcRecords)
 
 			// Create field expression for the destination column.
 			dstFieldExpr := GenerateFieldExpr(metadata, field.Dst)
-			dstFieldVals := requiredFieldValues(dstFieldExpr, field.Dst, dstFields, dstRecords)
+			if dstFieldExpr == nil {
+				failf("field expression [%s] is nil", field.Dst)
+				return
+			}
+			dstFieldVals := dstFieldExpr.FieldValue(dstFields, dstRecords)
 
 			// Track already-searched source values and cache destination values.
 			searchedFields := make(map[string]int)

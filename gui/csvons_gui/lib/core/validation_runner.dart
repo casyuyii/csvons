@@ -13,7 +13,7 @@ class ValidationRunner {
     bool jsonFormat = true,
   }) async {
     final args = <String>[
-      if (jsonFormat) ...['--format', 'json', '--quiet'],
+      if (jsonFormat) ...['--format', 'json'],
       rulerPath,
     ];
 

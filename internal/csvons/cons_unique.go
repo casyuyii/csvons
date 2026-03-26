@@ -48,7 +48,11 @@ func UniqueTest(stem string, ruler *Unique, metadata *Metadata) {
 	for _, fieldName := range ruler.Fields {
 		// Create field expression to extract values from the column.
 		fieldExpr := GenerateFieldExpr(metadata, fieldName)
-		fieldVals := requiredFieldValues(fieldExpr, fieldName, srcFields, srcRecords)
+		if fieldExpr == nil {
+			failf("field expression [%s] is nil", fieldName)
+			return
+		}
+		fieldVals := fieldExpr.FieldValue(srcFields, srcRecords)
 
 		// Track value occurrences; fail on any duplicate.
 		existingFields := make(map[string]int)

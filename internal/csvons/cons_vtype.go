@@ -54,7 +54,11 @@ func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 	for _, vtype := range ruler {
 		// Create field expression to extract values from the specified column.
 		fieldExpr := GenerateFieldExpr(metadata, vtype.Field)
-		fieldVals := requiredFieldValues(fieldExpr, vtype.Field, srcFields, srcRecords)
+		if fieldExpr == nil {
+			failf("field expression [%s] is nil", vtype.Field)
+			return
+		}
+		fieldVals := fieldExpr.FieldValue(srcFields, srcRecords)
 
 		// Cache already-checked values to avoid redundant type parsing.
 		// Map structure: field_name → { value → already_checked }
