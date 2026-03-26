@@ -5,23 +5,27 @@ class LocalState {
   final List<String> recentBinaryPaths;
   final List<String> recentRulerPaths;
   final List<String> recentWorkspacePaths;
+  final List<String> recentExportPaths;
 
   const LocalState({
     required this.recentBinaryPaths,
     required this.recentRulerPaths,
     required this.recentWorkspacePaths,
+    required this.recentExportPaths,
   });
 
   factory LocalState.empty() => const LocalState(
         recentBinaryPaths: <String>[],
         recentRulerPaths: <String>[],
         recentWorkspacePaths: <String>[],
+        recentExportPaths: <String>[],
       );
 
   Map<String, dynamic> toJson() => {
         'recent_binary_paths': recentBinaryPaths,
         'recent_ruler_paths': recentRulerPaths,
         'recent_workspace_paths': recentWorkspacePaths,
+        'recent_export_paths': recentExportPaths,
       };
 
   factory LocalState.fromJson(Map<String, dynamic> json) {
@@ -36,6 +40,10 @@ class LocalState {
               .toList(growable: false),
       recentWorkspacePaths:
           (json['recent_workspace_paths'] as List<dynamic>? ?? const <dynamic>[])
+              .map((e) => e.toString())
+              .toList(growable: false),
+      recentExportPaths:
+          (json['recent_export_paths'] as List<dynamic>? ?? const <dynamic>[])
               .map((e) => e.toString())
               .toList(growable: false),
     );
@@ -67,6 +75,7 @@ class LocalStateStore {
     required String binaryPath,
     required String rulerPath,
     String? workspacePath,
+    String? exportPath,
     int maxItems = 8,
   }) async {
     final existing = await load();
@@ -88,6 +97,10 @@ class LocalStateStore {
       recentWorkspacePaths: pushTop(
         existing.recentWorkspacePaths,
         workspacePath ?? '',
+      ),
+      recentExportPaths: pushTop(
+        existing.recentExportPaths,
+        exportPath ?? '',
       ),
     );
 
@@ -113,6 +126,38 @@ class LocalStateStore {
       recentBinaryPaths: existing.recentBinaryPaths,
       recentRulerPaths: existing.recentRulerPaths,
       recentWorkspacePaths: next.take(maxItems).toList(growable: false),
+      recentExportPaths: existing.recentExportPaths,
+    );
+
+    await File(_fileName).writeAsString(
+      const JsonEncoder.withIndent('  ').convert(state.toJson()),
+    );
+  }
+
+  Future<void> clear() async {
+    await File(_fileName).writeAsString(
+      const JsonEncoder.withIndent('  ').convert(LocalState.empty().toJson()),
+    );
+  }
+
+  Future<void> saveRecentExport({
+    required String exportPath,
+    int maxItems = 8,
+  }) async {
+    final existing = await load();
+    final trimmed = exportPath.trim();
+    if (trimmed.isEmpty) return;
+
+    final next = <String>[
+      trimmed,
+      ...existing.recentExportPaths.where((v) => v != trimmed),
+    ];
+
+    final state = LocalState(
+      recentBinaryPaths: existing.recentBinaryPaths,
+      recentRulerPaths: existing.recentRulerPaths,
+      recentWorkspacePaths: existing.recentWorkspacePaths,
+      recentExportPaths: next.take(maxItems).toList(growable: false),
     );
 
     await File(_fileName).writeAsString(
