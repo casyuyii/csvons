@@ -3,10 +3,19 @@ import 'dart:io';
 
 import '../models/validation_report.dart';
 
+typedef ProcessStarter = Future<Process> Function(
+  String executable,
+  List<String> arguments,
+);
+
 class ValidationRunner {
-  ValidationRunner({required this.binaryPath});
+  ValidationRunner({
+    required this.binaryPath,
+    ProcessStarter? processStarter,
+  }) : _processStarter = processStarter ?? Process.start;
 
   final String binaryPath;
+  final ProcessStarter _processStarter;
 
   Future<ValidationResult> run({
     required String rulerPath,
@@ -17,7 +26,7 @@ class ValidationRunner {
       rulerPath,
     ];
 
-    final proc = await Process.start(binaryPath, args);
+    final proc = await _processStarter(binaryPath, args);
     final outFuture = proc.stdout.transform(utf8.decoder).join();
     final errFuture = proc.stderr.transform(utf8.decoder).join();
 

@@ -1,7 +1,10 @@
 import 'dart:io';
 
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import '../core/csv_preview.dart';
 import '../core/local_state_store.dart';
 
 class WorkspacePage extends StatefulWidget {
@@ -18,6 +21,10 @@ class _WorkspacePageState extends State<WorkspacePage> {
   String? _error;
   List<FileSystemEntity> _csvFiles = const <FileSystemEntity>[];
   List<String> _recentWorkspacePaths = const <String>[];
+  String? _selectedCsvPath;
+  CsvPreview? _preview;
+  bool _previewLoading = false;
+  int _previewLoadToken = 0;
 
   @override
   void initState() {
@@ -44,6 +51,22 @@ class _WorkspacePageState extends State<WorkspacePage> {
     super.dispose();
   }
 
+  Future<void> _pickWorkspaceDirectory() async {
+    try {
+      final selected = await getDirectoryPath();
+      if (selected == null || selected.trim().isEmpty) return;
+      setState(() {
+        _workspaceController.text = selected;
+        _error = null;
+      });
+      await _scanWorkspace();
+    } on PlatformException catch (e) {
+      setState(() {
+        _error = 'Unable to open workspace picker: ${e.message ?? e.code}';
+      });
+    }
+  }
+
   Future<void> _scanWorkspace() async {
     final workspacePath = _workspaceController.text.trim();
     if (workspacePath.isEmpty) {
@@ -54,6 +77,9 @@ class _WorkspacePageState extends State<WorkspacePage> {
     setState(() {
       _loading = true;
       _error = null;
+      _preview = null;
+      _previewLoading = false;
+      _selectedCsvPath = null;
     });
 
     try {
@@ -90,6 +116,31 @@ class _WorkspacePageState extends State<WorkspacePage> {
     }
   }
 
+  Future<void> _selectCsv(String path) async {
+    final requestToken = ++_previewLoadToken;
+    setState(() {
+      _selectedCsvPath = path;
+      _preview = null;
+      _previewLoading = true;
+      _error = null;
+    });
+
+    try {
+      final preview = await CsvPreview.load(path);
+      if (!mounted || requestToken != _previewLoadToken) return;
+      setState(() {
+        _preview = preview;
+        _previewLoading = false;
+      });
+    } on IOException catch (e) {
+      if (!mounted || requestToken != _previewLoadToken) return;
+      setState(() {
+        _error = 'Unable to preview CSV: $e';
+        _previewLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,8 +152,13 @@ class _WorkspacePageState extends State<WorkspacePage> {
           children: [
             TextField(
               controller: _workspaceController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Workspace directory path',
+                suffixIcon: IconButton(
+                  tooltip: 'Browse workspace',
+                  icon: const Icon(Icons.folder_open),
+                  onPressed: _pickWorkspaceDirectory,
+                ),
               ),
               onSubmitted: (_) => _scanWorkspace(),
             ),
@@ -139,20 +195,37 @@ class _WorkspacePageState extends State<WorkspacePage> {
               Text('Detected ${_csvFiles.length} CSV file(s) in workspace.'),
             const SizedBox(height: 8),
             Expanded(
-              child: _csvFiles.isEmpty
-                  ? const _EmptyWorkspaceState()
-                  : ListView.builder(
-                      itemCount: _csvFiles.length,
-                      itemBuilder: (_, index) {
-                        final path = _csvFiles[index].path;
-                        return ListTile(
-                          dense: true,
-                          leading: const Icon(Icons.description_outlined),
-                          title: Text(path.split(Platform.pathSeparator).last),
-                          subtitle: Text(path),
-                        );
-                      },
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _csvFiles.isEmpty
+                        ? const _EmptyWorkspaceState()
+                        : ListView.builder(
+                            itemCount: _csvFiles.length,
+                            itemBuilder: (_, index) {
+                              final path = _csvFiles[index].path;
+                              final selected = path == _selectedCsvPath;
+                              return ListTile(
+                                selected: selected,
+                                dense: true,
+                                leading: const Icon(Icons.description_outlined),
+                                title: Text(path.split(Platform.pathSeparator).last),
+                                subtitle: Text(path),
+                                onTap: () => _selectCsv(path),
+                              );
+                            },
+                          ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _CsvPreviewCard(
+                      selectedCsvPath: _selectedCsvPath,
+                      preview: _preview,
+                      loading: _previewLoading,
                     ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -180,6 +253,91 @@ class _EmptyWorkspaceState extends StatelessWidget {
             style: textTheme.bodyMedium?.copyWith(color: Colors.grey.shade700),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CsvPreviewCard extends StatelessWidget {
+  const _CsvPreviewCard({
+    required this.selectedCsvPath,
+    required this.preview,
+    required this.loading,
+  });
+
+  final String? selectedCsvPath;
+  final CsvPreview? preview;
+  final bool loading;
+
+  @override
+  Widget build(BuildContext context) {
+    if (selectedCsvPath == null) {
+      return const Card(
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.all(12),
+            child: Text('Select a CSV file to preview header and sample rows.'),
+          ),
+        ),
+      );
+    }
+
+    if (loading) {
+      return const Card(
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (preview == null) {
+      return const Card(
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.all(12),
+            child: Text('Preview unavailable for selected file.'),
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              selectedCsvPath!.split(Platform.pathSeparator).last,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Columns: ${preview!.header.length} · Sample rows: ${preview!.rows.length}',
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: preview!.header
+                  .map((h) => Chip(label: Text(h.isEmpty ? '(empty)' : h)))
+                  .toList(growable: false),
+            ),
+            const Divider(height: 20),
+            Expanded(
+              child: preview!.rows.isEmpty
+                  ? const Center(child: Text('No data rows in this file.'))
+                  : ListView.builder(
+                      itemCount: preview!.rows.length,
+                      itemBuilder: (_, index) {
+                        final row = preview!.rows[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text('Row ${index + 1}: ${row.join(' | ')}'),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

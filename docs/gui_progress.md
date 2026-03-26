@@ -26,6 +26,10 @@ Estimated completion: **~60%** of the planned desktop-first V1 scope.
   - searchable/filterable/sortable issues table for JSON report output,
   - pre-run path existence validation and clearer empty state before first run,
   - empty-filter feedback when no issues match current table filters.
+  - report export controls (JSON + Markdown) from parsed validation results.
+  - recent export path history for quicker repeated exports.
+  - Clear Recents action for resetting local path history from the validate screen.
+  - quote-aware CSV preview parsing with multiline-field support.
 
 ## Remaining steps to finish V1 (desktop-first)
 
@@ -40,12 +44,17 @@ Estimated completion: **~60%** of the planned desktop-first V1 scope.
    - Add lint/format/analyzer CI checks.
 
 3. **UX completeness**
-   - ⏳ Add file/folder pickers for ruler and binary/workspace.
+   - ✅ Added file/folder picker buttons for ruler, binary, and workspace paths.
+   - ✅ Added picker error handling with inline UI feedback.
    - ✅ Added a dedicated workspace screen with CSV discovery, empty/error states, and recent-workspace quick select.
+   - ✅ Added CSV header + sample-row preview panel when selecting a workspace file.
+   - ✅ Added stale preview guard for fast file switching in workspace list.
 
 4. **Test coverage for GUI layer**
    - ✅ Added first Dart unit tests for issues filtering/sorting logic.
-   - ⏳ Add Dart unit tests for runner/model parsing and widget tests for results views/filtering.
+   - ✅ Added Dart unit tests for runner/model parsing.
+   - ✅ Added Dart unit tests for CSV preview parsing/loading.
+   - ⏳ Add widget tests for results views/filtering.
 
 5. **Packaging and release pipeline**
    - Bundle per-OS Go binaries with Flutter desktop artifacts.
