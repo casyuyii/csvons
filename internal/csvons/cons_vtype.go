@@ -21,7 +21,7 @@ import (
 func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 	// Validate input parameters.
 	if len(ruler) == 0 || metadata == nil {
-		log.Fatalf("ruler [%v] or metadata [%v] is nil", ruler, metadata)
+		failf("ruler [%v] or metadata [%v] is nil", ruler, metadata)
 		return
 	}
 	log.Printf("checking src file %s ...", stem)
@@ -29,14 +29,14 @@ func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 	// Validate metadata indices.
 	nameIndex := metadata.NameIndex
 	if nameIndex < 0 {
-		log.Fatalf("name_index [%d] is less than 0", nameIndex)
+		failf("name_index [%d] is less than 0", nameIndex)
 		return
 	}
 	log.Printf("name_index: %d", nameIndex)
 
 	dataIndex := metadata.DataIndex
 	if dataIndex <= nameIndex {
-		log.Fatalf("data_index [%d] is less than or equal to name_index [%d]", dataIndex, nameIndex)
+		failf("data_index [%d] is less than or equal to name_index [%d]", dataIndex, nameIndex)
 		return
 	}
 	log.Printf("data_index: %d", dataIndex)
@@ -44,7 +44,7 @@ func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 	// Read the source CSV file and validate it has enough rows.
 	srcRecords := ReadCsvFile(stem, metadata)
 	if srcLen := len(srcRecords); srcLen <= dataIndex {
-		log.Fatalf("src_records length [%d] <= data_index [%d]", srcLen, dataIndex)
+		failf("src_records length [%d] <= data_index [%d]", srcLen, dataIndex)
 		return
 	}
 	srcFields := srcRecords[nameIndex]
@@ -54,11 +54,7 @@ func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 	for _, vtype := range ruler {
 		// Create field expression to extract values from the specified column.
 		fieldExpr := GenerateFieldExpr(metadata, vtype.Field)
-		if fieldExpr == nil {
-			log.Fatalf("field expression [%s] is nil", vtype.Field)
-			return
-		}
-		fieldVals := fieldExpr.FieldValue(srcFields, srcRecords)
+		fieldVals := requiredFieldValues(fieldExpr, vtype.Field, srcFields, srcRecords)
 
 		// Cache already-checked values to avoid redundant type parsing.
 		// Map structure: field_name → { value → already_checked }
@@ -82,13 +78,13 @@ func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 				// Parse the value as a 64-bit integer.
 				v, ok := strconv.ParseInt(fieldVal, 10, 64)
 				if ok != nil {
-					log.Fatalf("src_field [%s] value [%s] is not an int", vtype.Field, fieldVal)
+					failf("src_field [%s] value [%s] is not an int", vtype.Field, fieldVal)
 					return
 				}
 				// Check range constraint if specified.
 				if vtype.Range != nil {
 					if v > int64(vtype.Range.Max) || v < int64(vtype.Range.Min) {
-						log.Fatalf("src_field [%s] value [%s] is not in the range [%v, %v]", vtype.Field, fieldVal, vtype.Range.Min, vtype.Range.Max)
+						failf("src_field [%s] value [%s] is not in the range [%v, %v]", vtype.Field, fieldVal, vtype.Range.Min, vtype.Range.Max)
 						return
 					}
 				}
@@ -103,13 +99,13 @@ func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 				// Parse the value as a 64-bit float.
 				v, ok := strconv.ParseFloat(fieldVal, 64)
 				if ok != nil {
-					log.Fatalf("src_field [%s] value [%s] is not a float64", vtype.Field, fieldVal)
+					failf("src_field [%s] value [%s] is not a float64", vtype.Field, fieldVal)
 					return
 				}
 				// Check range constraint if specified.
 				if vtype.Range != nil {
 					if v > vtype.Range.Max || v < vtype.Range.Min {
-						log.Fatalf("src_field [%s] value [%s] is not in the range [%v, %v]", vtype.Field, fieldVal, vtype.Range.Min, vtype.Range.Max)
+						failf("src_field [%s] value [%s] is not in the range [%v, %v]", vtype.Field, fieldVal, vtype.Range.Min, vtype.Range.Max)
 						return
 					}
 				}
@@ -123,12 +119,12 @@ func VTypeTest(stem string, ruler []VType, metadata *Metadata) {
 
 				// Validate boolean parsing (accepts: true/false, 1/0, t/f, yes/no, etc.)
 				if _, ok := strconv.ParseBool(fieldVal); ok != nil {
-					log.Fatalf("src_field [%s] value [%s] is not a bool", vtype.Field, fieldVal)
+					failf("src_field [%s] value [%s] is not a bool", vtype.Field, fieldVal)
 					return
 				}
 
 			default:
-				log.Fatalf("src_field [%s] value [%s] is not a valid type", vtype.Field, fieldVal)
+				failf("src_field [%s] value [%s] is not a valid type", vtype.Field, fieldVal)
 				return
 			}
 			// Mark this value as checked in the cache.
