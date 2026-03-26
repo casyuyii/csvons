@@ -5,8 +5,12 @@ Minimal Flutter starter wiring for running the Go `csvons` validator binary.
 ## What is included
 
 - `lib/core/validation_runner.dart`: process runner for `csvons`.
-- `lib/models/validation_report.dart`: basic JSON models for report parsing.
-- `lib/screens/home_page.dart`: starter screen to run validation and view output.
+- `lib/core/local_state_store.dart`: local persistence for recent binary/ruler/workspace paths.
+- `lib/core/issue_filters.dart`: issue filtering/sorting logic extracted for testability.
+- `lib/models/validation_report.dart`: JSON models for report parsing (including `schema_version`).
+- `lib/screens/home_page.dart`: starter screen to run validation, reuse recent paths, validate file existence before launch, and inspect issues in a searchable/sortable table.
+- `lib/screens/workspace_page.dart`: workspace scanner that lists CSV files in a selected directory and supports recent-workspace quick select.
+- `test/core/issue_filters_test.dart`: unit tests for issue filtering and sorting behavior.
 - `lib/main.dart`: app entry.
 
 ## How to use

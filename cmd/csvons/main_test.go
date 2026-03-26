@@ -41,6 +41,9 @@ func TestEmitOutputJSONToStdout(t *testing.T) {
 	if got.Summary.FilesChecked != 2 || got.Summary.Passed != 2 || got.Summary.Failed != 0 {
 		t.Fatalf("unexpected summary: %+v", got.Summary)
 	}
+	if got.SchemaVersion != reportSchemaVersion {
+		t.Fatalf("unexpected schema version: %q", got.SchemaVersion)
+	}
 }
 
 func TestEmitOutputTextToFile(t *testing.T) {

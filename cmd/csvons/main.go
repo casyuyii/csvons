@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"time"
@@ -39,9 +38,12 @@ type validationIssue struct {
 }
 
 type validationReport struct {
-	Summary validationSummary `json:"summary"`
-	Issues  []validationIssue `json:"issues"`
+	SchemaVersion string            `json:"schema_version,omitempty"`
+	Summary       validationSummary `json:"summary"`
+	Issues        []validationIssue `json:"issues"`
 }
+
+const reportSchemaVersion = "csvons.validation_report.v1"
 
 func main() {
 	os.Exit(run())
@@ -168,6 +170,9 @@ func emitOutput(format, outputPath string, report validationReport) error {
 	var out []byte
 	switch format {
 	case "json":
+		if report.SchemaVersion == "" {
+			report.SchemaVersion = reportSchemaVersion
+		}
 		data, err := json.MarshalIndent(report, "", "  ")
 		if err != nil {
 			return err

@@ -2,7 +2,7 @@
 
 ## Current status
 
-Estimated completion: **~55%** of the planned desktop-first V1 scope.
+Estimated completion: **~60%** of the planned desktop-first V1 scope.
 
 ## What is already done
 
@@ -20,7 +20,12 @@ Estimated completion: **~55%** of the planned desktop-first V1 scope.
 ### Flutter starter
 - Added starter app shell, process runner (`ValidationRunner`), and report models.
 - Added local persistence for recent binary/ruler paths.
-- Added results filtering and sortable issues table.
+- Improved home screen UX with:
+  - recent-path quick-select chips,
+  - run status banner (pass/issues/runtime error),
+  - searchable/filterable/sortable issues table for JSON report output,
+  - pre-run path existence validation and clearer empty state before first run,
+  - empty-filter feedback when no issues match current table filters.
 
 ## Remaining steps to finish V1 (desktop-first)
 
@@ -28,18 +33,19 @@ Estimated completion: **~55%** of the planned desktop-first V1 scope.
    - ✅ Added richer issue fields in report model (`file`, `rule`, `field`, `row`, `value`).
    - ✅ Added recovered-failure context population for `file`/`rule`, plus best-effort `field` extraction from validator messages.
    - ⏳ Ensure these fields are populated consistently for every validator failure path.
-   - ⏳ Add schema/version note to avoid future breaking changes.
+   - ✅ Added explicit JSON `schema_version` to the report contract.
 
 2. **Flutter project productionization**
    - Convert starter folder into fully initialized Flutter project structure and dependency config.
    - Add lint/format/analyzer CI checks.
 
 3. **UX completeness**
-   - Add file/folder pickers for ruler and binary/workspace.
-   - Add a dedicated workspace screen and better empty/error states.
+   - ⏳ Add file/folder pickers for ruler and binary/workspace.
+   - ✅ Added a dedicated workspace screen with CSV discovery, empty/error states, and recent-workspace quick select.
 
 4. **Test coverage for GUI layer**
-   - Add Dart unit tests for runner/model parsing and widget tests for results views/filtering.
+   - ✅ Added first Dart unit tests for issues filtering/sorting logic.
+   - ⏳ Add Dart unit tests for runner/model parsing and widget tests for results views/filtering.
 
 5. **Packaging and release pipeline**
    - Bundle per-OS Go binaries with Flutter desktop artifacts.

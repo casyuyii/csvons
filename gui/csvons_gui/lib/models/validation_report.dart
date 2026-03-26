@@ -55,16 +55,22 @@ class ValidationSummary {
 }
 
 class ValidationReport {
+  final String schemaVersion;
   final ValidationSummary summary;
   final List<ValidationIssue> issues;
 
-  ValidationReport({required this.summary, required this.issues});
+  ValidationReport({
+    required this.schemaVersion,
+    required this.summary,
+    required this.issues,
+  });
 
   factory ValidationReport.fromJson(Map<String, dynamic> json) {
     final rawIssues = (json['issues'] as List<dynamic>? ?? const <dynamic>[])
         .cast<Map<String, dynamic>>();
 
     return ValidationReport(
+      schemaVersion: json['schema_version']?.toString() ?? '',
       summary: ValidationSummary.fromJson(json['summary'] as Map<String, dynamic>?),
       issues: rawIssues.map(ValidationIssue.fromJson).toList(growable: false),
     );
