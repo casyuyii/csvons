@@ -20,12 +20,20 @@ Minimal Flutter starter wiring for running the Go `csvons` validator binary.
 
 ## How to use
 
-1. Create/prepare a Flutter project in this folder (`flutter create .` if needed).
-2. Build `csvons` binary and place it at a path you can reference from the UI.
-3. Start the app and enter:
+1. Install dependencies: `flutter pub get`.
+2. If platform folders are missing, generate them once with `flutter create .`.
+3. Run checks:
+   - `flutter analyze`
+   - `flutter test`
+   - or one-shot bootstrap + checks: `./tool/bootstrap.sh`
+   - or use make targets: `make check` (or `make analyze`, `make format`, `make test`)
+   - remove generated/local artifacts with: `make clean`
+   - make targets include a preflight check that prints a clear error if `flutter`/`dart` are missing
+4. Build `csvons` binary and place it at a path you can reference from the UI.
+5. Start the app and enter:
    - binary path (e.g., `bin/csvons_linux`)
    - absolute `ruler.json` path
-4. Click **Run Validation**.
+6. Click **Run Validation**.
 
 > Note: current Go CLI may not emit JSON yet. If JSON parse fails, raw stdout/stderr is shown.
 
@@ -37,3 +45,12 @@ Minimal Flutter starter wiring for running the Go `csvons` validator binary.
 - Picker failures are surfaced as inline UI errors instead of silently failing.
 
 - Home screen includes a **Clear Recents** action to reset locally stored path history.
+
+- CI workflow for GUI checks lives at `.github/workflows/gui_checks.yml` and runs `make check` (deps/analyze/format/test) plus root-level `go test ./...`.
+- CI workflow enables Flutter dependency caching to reduce rerun time.
+- Local bootstrap/check helper lives at `tool/bootstrap.sh` and runs `flutter create .`, dependency install, analyze, format check, and tests.
+- Local cleanup helper lives at `tool/clean_generated.sh` (also `make clean`) and removes generated platform and tool artifacts.
+- Generated Flutter platform folders are intentionally ignored via `.gitignore` in this starter module.
+
+- Project-level finish workflow is documented in `../../docs/flutter_gui_finish_process.md`.
+- Packaging location note is documented in `../../docs/flutter_gui_packaging_note.md`.

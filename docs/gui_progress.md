@@ -24,6 +24,23 @@ Estimated completion: **~60%** of the planned desktop-first V1 scope.
   - recent-path quick-select chips,
   - run status banner (pass/issues/runtime error),
   - searchable/filterable/sortable issues table for JSON report output,
+  - search now includes issue `value`, `row`, and `severity` in addition to message/file/rule/field,
+  - issues table now includes a sortable `value` column for direct payload ordering,
+  - value sorting now places null/empty values last for cleaner scans,
+  - semantic severity sorting order (`critical/fatal` -> `error` -> `warning` -> `info` -> others),
+  - deterministic tie-break sorting (row/message) when primary sort values are equal,
+  - row sorting places unknown/null row indices last for clearer ordering,
+  - file/rule filter controls with reset for faster triage,
+  - quick, dynamic severity chips with scope-aware counts for one-click issue slicing,
+  - severity chips follow semantic order (`critical/fatal`, `error`, `warning`, `info`, others),
+  - reset control now disables when no active filters are applied.
+  - explicit empty-report message when a validation run returns zero issues.
+  - active-filter summary line explains exactly which filters/search are applied.
+  - active-filter summary now includes visible/total issue counts for quick context sharing.
+  - copy-to-clipboard action for active filter summary text.
+  - copy action now confirms success with a brief snackbar message.
+  - issue count label now shows both visible and total issues (`showing X of Y`).
+  - empty-filter state now includes a one-click `Reset all filters` action.
   - pre-run path existence validation and clearer empty state before first run,
   - empty-filter feedback when no issues match current table filters.
   - report export controls (JSON + Markdown) from parsed validation results.
@@ -40,8 +57,17 @@ Estimated completion: **~60%** of the planned desktop-first V1 scope.
    - ✅ Added explicit JSON `schema_version` to the report contract.
 
 2. **Flutter project productionization**
-   - Convert starter folder into fully initialized Flutter project structure and dependency config.
-   - Add lint/format/analyzer CI checks.
+   - ✅ Added starter `pubspec.yaml` + `analysis_options.yaml` with lint baseline and dependency declarations.
+   - ✅ Added GitHub Actions workflow (`.github/workflows/gui_checks.yml`) for GUI checks (`make check`) and root Go tests.
+   - ✅ Enabled Flutter dependency caching in CI workflow for faster repeated runs.
+   - ✅ CI Flutter job now runs `make check` to mirror local developer checks.
+   - ✅ Added CI formatting check (`dart format --set-exit-if-changed lib test`).
+   - ✅ Added local bootstrap helper (`gui/csvons_gui/tool/bootstrap.sh`) to run create/pub/analyze/format/test in one command.
+   - ✅ Added `gui/csvons_gui/Makefile` convenience targets (`make check`, `make analyze`, `make format`, `make test`).
+   - ✅ Added GUI cleanup command (`make clean`) for generated tool/platform artifacts.
+   - ✅ Added Makefile preflight checks with explicit missing `flutter`/`dart` error messages.
+   - ✅ Added GUI module `.gitignore` for Flutter tool outputs and generated platform directories.
+   - ⏳ Convert starter folder into fully initialized Flutter project structure (`flutter create .` + platform folders).
 
 3. **UX completeness**
    - ✅ Added file/folder picker buttons for ruler, binary, and workspace paths.
@@ -54,9 +80,11 @@ Estimated completion: **~60%** of the planned desktop-first V1 scope.
    - ✅ Added first Dart unit tests for issues filtering/sorting logic.
    - ✅ Added Dart unit tests for runner/model parsing.
    - ✅ Added Dart unit tests for CSV preview parsing/loading.
-   - ⏳ Add widget tests for results views/filtering.
+   - ✅ Added first widget tests for issues-table results filtering and empty-filter state messaging.
+   - ✅ Added widget test coverage for DataTable value-column sorting interaction.
 
 5. **Packaging and release pipeline**
+   - ✅ Added initial packaging location note (`docs/flutter_gui_packaging_note.md`) for bundled per-OS `csvons` binaries.
    - Bundle per-OS Go binaries with Flutter desktop artifacts.
    - Add one end-to-end desktop build in CI and a release checklist.
 
@@ -73,3 +101,5 @@ If worked sequentially, this is about **5 major steps** left to reach a practica
   1. Merge the current PR.
   2. Update local branch from `master` (`git fetch && git checkout master && git pull`).
   3. Start the next task/PR from that updated head.
+
+See also: `docs/flutter_gui_finish_process.md` for the current step-by-step **dynamic** finish process/checklist.
