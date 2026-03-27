@@ -1,0 +1,18 @@
+# Flutter/Dart tool outputs
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+
+# Generated platform files (created by `flutter create .`)
+android/
+ios/
+linux/
+macos/
+windows/
+web/
+
+# IDE/editor files
+.idea/
+*.iml
