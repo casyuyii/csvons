@@ -1,5 +1,9 @@
 # Flutter GUI Plan for csvons
 
+## Scope update (2026-03-27)
+
+The current V1 handoff scope is the desktop-first **Validate + Workspace** application already present in `gui/csvons_gui`. Ruler authoring/editing remains future scope and should not block the desktop validator release candidate.
+
 ## 1) What this project currently is
 
 `csvons` is a Go CLI tool that validates CSV files against rule definitions in a JSON config ("ruler").

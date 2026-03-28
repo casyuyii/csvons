@@ -2,15 +2,17 @@
 
 ## Current status
 
-Estimated completion: **~60%** of the planned desktop-first V1 scope.
+Estimated completion: **~75%** of the planned desktop-first V1 scope.
 
 ## What is already done
 
 ### Go CLI integration contract
-- Added CLI flags: `--format`, `--output`, `--quiet`.
+- Added CLI flags: `--format`, `--output`.
 - Added structured report model (`summary` + `issues`) and JSON/text output emission.
-- Added stable run wrappers (`run`, `runWithArgs`) and recovery path for structured failure output.
-- Added tests for output and `runWithArgs` behavior (success, invalid format, missing args/config, validation failure).
+- Hardened recovered failure output so JSON issues now carry `file`, `rule`, `field`, `row`, `value`, `message`, and `severity`.
+- Added `runWithArgs(...)` so CLI behavior can be tested without mutating global flag state.
+- Validation failures now preserve exit code `1`, while runtime/config failures preserve exit code `2`.
+- Added tests for output emission plus `runWithArgs(...)` validation/runtime report behavior.
 
 ### Validation error plumbing
 - Replaced validator hard exits with recoverable `failf(...)` panics.
@@ -47,14 +49,15 @@ Estimated completion: **~60%** of the planned desktop-first V1 scope.
   - recent export path history for quicker repeated exports.
   - Clear Recents action for resetting local path history from the validate screen.
   - quote-aware CSV preview parsing with multiline-field support.
+  - bundled-validator resolution that prefers packaged `bin/<platform>/csvons` sidecars before legacy dev fallback paths.
 
 ## Remaining steps to finish V1 (desktop-first)
 
 1. **Go report schema hardening** *(in progress)*
    - ✅ Added richer issue fields in report model (`file`, `rule`, `field`, `row`, `value`).
-   - ✅ Added recovered-failure context population for `file`/`rule`, plus best-effort `field` extraction from validator messages.
-   - ⏳ Ensure these fields are populated consistently for every validator failure path.
+   - ✅ Added structured validator/runtime failures so every recovered issue emits consistent metadata.
    - ✅ Added explicit JSON `schema_version` to the report contract.
+   - ✅ Split exit-code handling so validation issues remain `1` and runtime/config failures remain `2`.
 
 2. **Flutter project productionization**
    - ✅ Added starter `pubspec.yaml` + `analysis_options.yaml` with lint baseline and dependency declarations.
@@ -67,7 +70,8 @@ Estimated completion: **~60%** of the planned desktop-first V1 scope.
    - ✅ Added GUI cleanup command (`make clean`) for generated tool/platform artifacts.
    - ✅ Added Makefile preflight checks with explicit missing `flutter`/`dart` error messages.
    - ✅ Added GUI module `.gitignore` for Flutter tool outputs and generated platform directories.
-   - ⏳ Convert starter folder into fully initialized Flutter project structure (`flutter create .` + platform folders).
+   - ✅ Committed the scaffolding strategy: generated Flutter platform folders stay untracked and are regenerated via `flutter create .` in bootstrap/CI.
+   - ⏳ Execute a full local `flutter create .` + `make check` pass in an environment with Flutter installed and record results.
 
 3. **UX completeness**
    - ✅ Added file/folder picker buttons for ruler, binary, and workspace paths.
@@ -85,8 +89,11 @@ Estimated completion: **~60%** of the planned desktop-first V1 scope.
 
 5. **Packaging and release pipeline**
    - ✅ Added initial packaging location note (`docs/flutter_gui_packaging_note.md`) for bundled per-OS `csvons` binaries.
-   - Bundle per-OS Go binaries with Flutter desktop artifacts.
-   - Add one end-to-end desktop build in CI and a release checklist.
+   - ✅ Updated Flutter runner resolution to prefer bundled sidecar binaries before legacy dev defaults.
+   - ✅ Added Linux sidecar staging helper (`gui/csvons_gui/tool/stage_bundle_binary.sh`).
+   - ✅ Added one Linux desktop bundle build/smoke-test path to CI.
+   - ✅ Added release checklist doc (`docs/flutter_gui_release_checklist.md`).
+   - ⏳ Validate the new CI desktop build on one real PR run and capture any follow-up fixes.
 
 ## Finish estimate
 

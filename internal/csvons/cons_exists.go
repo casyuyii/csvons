@@ -19,9 +19,11 @@ import (
 // Calls log.Fatalf if any source value is not found in the destination,
 // or if required parameters are invalid.
 func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
+	fileName := csvFileName(stem, metadata)
+
 	// Validate input parameters.
 	if len(ruler) == 0 || metadata == nil {
-		failf("ruler [%v] or metadata [%v] is nil", ruler, metadata)
+		failRuntime(ValidationContext{File: fileName, Rule: "exists"}, "ruler [%v] or metadata [%v] is nil", ruler, metadata)
 		return
 	}
 	log.Printf("checking src file %s ...", stem)
@@ -29,14 +31,14 @@ func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 	// Validate metadata indices.
 	nameIndex := metadata.NameIndex
 	if nameIndex < 0 {
-		failf("name_index [%d] is less than 0", nameIndex)
+		failRuntime(ValidationContext{File: fileName, Rule: "exists"}, "name_index [%d] is less than 0", nameIndex)
 		return
 	}
 	log.Printf("name_index: %d", nameIndex)
 
 	dataIndex := metadata.DataIndex
 	if dataIndex <= nameIndex {
-		failf("data_index [%d] is less than or equal to name_index [%d]", dataIndex, nameIndex)
+		failRuntime(ValidationContext{File: fileName, Rule: "exists"}, "data_index [%d] is less than or equal to name_index [%d]", dataIndex, nameIndex)
 		return
 	}
 	log.Printf("data_index: %d", dataIndex)
@@ -44,7 +46,7 @@ func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 	// Read the source CSV file and validate it has enough rows.
 	srcRecords := ReadCsvFile(stem, metadata)
 	if srcLen := len(srcRecords); srcLen <= dataIndex {
-		failf("src_records length [%d] <= data_index [%d]", srcLen, dataIndex)
+		failRuntime(ValidationContext{File: fileName, Rule: "exists"}, "src_records length [%d] <= data_index [%d]", srcLen, dataIndex)
 		return
 	}
 	srcFields := srcRecords[nameIndex]
@@ -52,10 +54,17 @@ func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 
 	// Check each existence rule against its destination file.
 	for _, exist := range ruler {
+		dstFileName := csvFileName(exist.DstFileStem, metadata)
+
 		// Read the destination CSV file.
 		dstRecords := ReadCsvFile(exist.DstFileStem, metadata)
 		if dstLen := len(dstRecords); dstLen <= dataIndex {
-			failf("dst_records length [%d] <= data_index [%d]", dstLen, dataIndex)
+			failRuntime(
+				ValidationContext{File: dstFileName, Rule: "exists"},
+				"dst_records length [%d] <= data_index [%d]",
+				dstLen,
+				dataIndex,
+			)
 			return
 		}
 		log.Printf("checking dst file %s ...", exist.DstFileStem)
@@ -67,25 +76,31 @@ func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 		for _, field := range exist.Fields {
 			// Create field expression for the source column.
 			srcFieldExpr := GenerateFieldExpr(metadata, field.Src)
-			if srcFieldExpr == nil {
-				failf("field expression [%s] is nil", field.Src)
-				return
-			}
-			srcFieldVals := srcFieldExpr.FieldValue(srcFields, srcRecords)
+			srcFieldVals := requiredFieldOccurrences(
+				srcFieldExpr,
+				field.Src,
+				srcFields,
+				srcRecords,
+				ValidationContext{File: fileName, Rule: "exists", Field: field.Src},
+			)
 
 			// Create field expression for the destination column.
 			dstFieldExpr := GenerateFieldExpr(metadata, field.Dst)
-			if dstFieldExpr == nil {
-				failf("field expression [%s] is nil", field.Dst)
-				return
-			}
-			dstFieldVals := dstFieldExpr.FieldValue(dstFields, dstRecords)
+			dstFieldVals := requiredFieldOccurrences(
+				dstFieldExpr,
+				field.Dst,
+				dstFields,
+				dstRecords,
+				ValidationContext{File: dstFileName, Rule: "exists", Field: field.Dst},
+			)
 
 			// Track already-searched source values and cache destination values.
 			searchedFields := make(map[string]int)
 			cacheDstFieldVals := make(map[string]bool)
 
-			for fieldVal := range srcFieldVals {
+			for srcOccurrence := range srcFieldVals {
+				fieldVal := srcOccurrence.Value
+
 				// Skip source values we've already verified.
 				if _, ok := searchedFields[fieldVal]; ok {
 					log.Printf("src_field [%s] value [%s] already searched at row [%d]", field.Src, fieldVal, searchedFields[fieldVal])
@@ -100,9 +115,9 @@ func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 
 				// Iterate through destination values until we find a match.
 				// Each consumed destination value is cached for future lookups.
-				for dstFieldVal := range dstFieldVals {
-					cacheDstFieldVals[dstFieldVal] = true
-					if dstFieldVal == fieldVal {
+				for dstOccurrence := range dstFieldVals {
+					cacheDstFieldVals[dstOccurrence.Value] = true
+					if dstOccurrence.Value == fieldVal {
 						log.Printf("found src_field [%s] value [%s] in dst_records", field.Src, fieldVal)
 						break
 					}
@@ -110,8 +125,21 @@ func ExistsTest(stem string, ruler []Exists, metadata *Metadata) {
 
 				// If the value was not found after exhausting destination values, fail.
 				if _, ok := cacheDstFieldVals[fieldVal]; !ok {
-					failf("src_field [%s] value [%s] not found in dst_records", field.Src, fieldVal)
+					failValidation(
+						ValidationContext{
+							File:  fileName,
+							Rule:  "exists",
+							Field: field.Src,
+							Row:   rowPointer(srcOccurrence.Row),
+							Value: fieldVal,
+						},
+						"src_field [%s] value [%s] not found in dst_records",
+						field.Src,
+						fieldVal,
+					)
 				}
+
+				searchedFields[fieldVal] = srcOccurrence.Row
 			}
 		}
 	}

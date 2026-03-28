@@ -97,4 +97,36 @@ void main() {
     expect(capturedArgs, ['/tmp/ruler.json']);
     expect(result.report, isNull);
   });
+
+  test('resolves an empty binary path to the bundled platform location', () async {
+    final originalCurrentDir = Directory.current.path;
+    final tempDir = await Directory.systemTemp.createTemp('csvons_gui_runner');
+    addTearDown(() async {
+      Directory.current = originalCurrentDir;
+      await tempDir.delete(recursive: true);
+    });
+
+    Directory.current = tempDir.path;
+    final bundled = File(ValidationRunner.bundledBinaryPath());
+    await bundled.parent.create(recursive: true);
+    await bundled.writeAsString('binary');
+
+    late String capturedExecutable;
+    final runner = ValidationRunner(
+      binaryPath: '',
+      processStarter: (executable, arguments) async {
+        capturedExecutable = executable;
+        return _FakeProcess(
+          code: 0,
+          stdoutText: '{"summary":{"files_checked":1},"issues":[]}',
+          stderrText: '',
+        );
+      },
+    );
+
+    await runner.run(rulerPath: '/tmp/ruler.json');
+
+    expect(capturedExecutable, ValidationRunner.bundledBinaryPath());
+    expect(ValidationRunner.defaultBinaryPath(), ValidationRunner.bundledBinaryPath());
+  });
 }

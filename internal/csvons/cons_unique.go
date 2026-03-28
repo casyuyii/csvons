@@ -13,9 +13,11 @@ import (
 //
 // Calls log.Fatalf if any duplicate is found or if parameters are invalid.
 func UniqueTest(stem string, ruler *Unique, metadata *Metadata) {
+	fileName := csvFileName(stem, metadata)
+
 	// Validate input parameters.
 	if ruler == nil || metadata == nil {
-		failf("ruler [%v] or metadata [%v] is nil", ruler, metadata)
+		failRuntime(ValidationContext{File: fileName, Rule: "unique"}, "ruler [%v] or metadata [%v] is nil", ruler, metadata)
 		return
 	}
 	log.Printf("checking src file %s ...", stem)
@@ -23,14 +25,14 @@ func UniqueTest(stem string, ruler *Unique, metadata *Metadata) {
 	// Validate metadata indices.
 	nameIndex := metadata.NameIndex
 	if nameIndex < 0 {
-		failf("name_index [%d] is less than 0", nameIndex)
+		failRuntime(ValidationContext{File: fileName, Rule: "unique"}, "name_index [%d] is less than 0", nameIndex)
 		return
 	}
 	log.Printf("name_index: %d", nameIndex)
 
 	dataIndex := metadata.DataIndex
 	if dataIndex <= nameIndex {
-		failf("data_index [%d] is less than or equal to name_index [%d]", dataIndex, nameIndex)
+		failRuntime(ValidationContext{File: fileName, Rule: "unique"}, "data_index [%d] is less than or equal to name_index [%d]", dataIndex, nameIndex)
 		return
 	}
 	log.Printf("data_index: %d", dataIndex)
@@ -38,7 +40,7 @@ func UniqueTest(stem string, ruler *Unique, metadata *Metadata) {
 	// Read the source CSV file and validate it has enough rows.
 	srcRecords := ReadCsvFile(stem, metadata)
 	if srcLen := len(srcRecords); srcLen <= dataIndex {
-		failf("src_records length [%d] <= data_index [%d]", srcLen, dataIndex)
+		failRuntime(ValidationContext{File: fileName, Rule: "unique"}, "src_records length [%d] <= data_index [%d]", srcLen, dataIndex)
 		return
 	}
 	srcFields := srcRecords[nameIndex]
@@ -48,18 +50,32 @@ func UniqueTest(stem string, ruler *Unique, metadata *Metadata) {
 	for _, fieldName := range ruler.Fields {
 		// Create field expression to extract values from the column.
 		fieldExpr := GenerateFieldExpr(metadata, fieldName)
-		if fieldExpr == nil {
-			failf("field expression [%s] is nil", fieldName)
-			return
-		}
-		fieldVals := fieldExpr.FieldValue(srcFields, srcRecords)
+		fieldVals := requiredFieldOccurrences(
+			fieldExpr,
+			fieldName,
+			srcFields,
+			srcRecords,
+			ValidationContext{File: fileName, Rule: "unique", Field: fieldName},
+		)
 
 		// Track value occurrences; fail on any duplicate.
 		existingFields := make(map[string]int)
-		for fieldVal := range fieldVals {
+		for occurrence := range fieldVals {
+			fieldVal := occurrence.Value
 			existingFields[fieldVal] += 1
 			if existingFields[fieldVal] > 1 {
-				failf("src_field [%s] value [%s] already exists", fieldName, fieldVal)
+				failValidation(
+					ValidationContext{
+						File:  fileName,
+						Rule:  "unique",
+						Field: fieldName,
+						Row:   rowPointer(occurrence.Row),
+						Value: fieldVal,
+					},
+					"src_field [%s] value [%s] already exists",
+					fieldName,
+					fieldVal,
+				)
 			}
 		}
 

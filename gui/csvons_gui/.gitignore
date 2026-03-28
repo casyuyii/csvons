@@ -4,6 +4,8 @@
 .flutter-plugins-dependencies
 .packages
 build/
+bin/*
+!bin/.gitkeep
 
 # Generated platform files (created by `flutter create .`)
 android/
